@@ -1,0 +1,18 @@
+{
+  "frontendFolder": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/./src/main/frontend",
+  "themeFolder": "themes",
+  "themeResourceFolder": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/./src/main/frontend/generated/jar-resources",
+  "staticOutput": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/target/classes/META-INF/VAADIN/webapp/VAADIN/static",
+  "generatedFolder": "generated",
+  "statsOutput": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/target/classes/META-INF/VAADIN/config",
+  "frontendBundleOutput": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/target/classes/META-INF/VAADIN/webapp",
+  "devBundleOutput": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/target/dev-bundle/webapp",
+  "devBundleStatsOutput": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/target/dev-bundle/config",
+  "i18nOutput": "target/classes/vaadin-i18n",
+  "jarResourcesFolder": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/./src/main/frontend/generated/jar-resources",
+  "themeName": "",
+  "clientServiceWorkerSource": "/home/rafael/Escritorio/IdeaProjects/ConsultorioAcupuntura/target/sw.ts",
+  "pwaEnabled": false,
+  "offlineEnabled": false,
+  "offlinePath": "'offline.html'"
+}

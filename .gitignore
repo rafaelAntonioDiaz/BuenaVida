@@ -1,0 +1,49 @@
+
+# Build artifacts (Railway compilará desde código fuente)
+build/
+.gradle/
+
+# Mantener todo del directorio wrapper de Gradle
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# Archivos de logs
+*.log
+
+# Archivos de volcado de memoria de la JVM
+hs_err_pid*
+
+# Archivos específicos de IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Archivos específicos de STS/Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# Archivos específicos de VS Code
+.vscode/
+
+# Dependencias de Node.js (si usas frontend)
+node_modules/
+
+# Archivo de ayuda específico que quieres ignorar
+HELP.md
+
+# Aplicación específica - ConsultorioAcupuntura
+pacientes-uploads/
+frontend/generated/
+src/main/frontend/generated/
+# Permitir script gradlew para deployment
+!gradlew
+!gradlew.bat
+build/

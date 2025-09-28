@@ -1,0 +1,24 @@
+.medico-citas-view .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lumo-space-s);
+}
+
+.lista-sesiones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lumo-space-m);
+  margin-top: var(--lumo-space-m);
+}
+
+.item-sesion {
+  padding: var(--lumo-space-m);
+  border-radius: var(--lumo-border-radius-m);
+  background: var(--lumo-contrast-5pct);
+}
+
+.item-sesion__info {
+  margin: 0 0 var(--lumo-space-s) 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

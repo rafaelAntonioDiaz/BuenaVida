@@ -1,0 +1,44 @@
+/* frontend/styles/paciente-view.css */
+:root {
+  --space-responsive: clamp(var(--lumo-space-s), 2vw, var(--lumo-space-l));
+}
+
+.paciente-view {
+  padding-inline: var(--lumo-space-m);
+}
+
+.paciente-grid {
+  display: grid;
+  gap: var(--space-responsive);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: auto;
+  grid-template-areas:
+    "welcome profile"
+    "recomend schedule"
+    "estados  estados"
+    "antecedentes antecedentes";
+  align-items: start;
+}
+
+@media (max-width: 840px) {
+  .paciente-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "welcome"
+      "profile"
+      "recomend"
+      "schedule"
+      "estados"
+      "antecedentes";
+  }
+
+  .paciente-grid > * {
+    min-width: 0;
+  }
+
+  /* Asegura que cada card ocupe el ancho completo en móvil */
+  .paciente-grid .card,
+  .paciente-grid vaadin-vertical-layout.card {
+    width: 100%;
+  }
+}

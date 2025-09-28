@@ -1,0 +1,97 @@
+/* css */
+/* Grid responsive para la vista del médico */
+.medico-grid {
+  display: grid;
+  gap: var(--lumo-space-l);
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "confirm"
+    "clinic"
+    "rx";
+}
+
+/* Tablet (≥ 900px): 2 columnas, “confirm” ocupa el ancho */
+@media (min-width: 900px) {
+  .medico-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "confirm confirm"
+      "clinic rx";
+  }
+}
+
+/* Desktop (≥ 1280px): 3 columnas */
+@media (min-width: 1280px) {
+  .medico-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas: "confirm clinic rx";
+  }
+}
+
+/* Asegurar que las cards no desborden y se vean como tarjetas */
+.card {
+  grid-area: auto;
+  padding: var(--lumo-space-m);
+  border-radius: var(--lumo-border-radius-l);
+  background: var(--lumo-base-color);
+  box-shadow: var(--lumo-box-shadow-s);
+  min-width: 0;           /* evita que hijos fuerzen el ancho de la columna */
+  overflow: hidden;       /* previene desbordes visuales */
+}
+
+/* Mapear cada card a su área cuando el código les asigna grid-area */
+.card:nth-child(1) { grid-area: confirm; }
+.card:nth-child(2) { grid-area: clinic; }
+.card:nth-child(3) { grid-area: rx; }
+
+/* Inputs de Vaadin ocupan 100% del ancho disponible */
+.medico-admin-view vaadin-text-field,
+.medico-admin-view vaadin-combo-box,
+.medico-admin-view vaadin-text-area,
+.medico-admin-view vaadin-button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Los botones suelen ir en contenedores horizontales: en móvil deben envolver */
+.medico-admin-view .filters,
+.medico-admin-view .lista-prescripciones + vaadin-horizontal-layout,
+.medico-admin-view .item-sesion vaadin-horizontal-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lumo-space-s);
+}
+
+/* Listas internas con separación vertical */
+.lista-sesiones,
+.lista-prescripciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lumo-space-s);
+}
+
+/* Ítems visuales de listas */
+.item-sesion,
+.item-prescripcion {
+  padding: var(--lumo-space-m);
+  border-radius: var(--lumo-border-radius-m);
+  background: var(--lumo-contrast-5pct);
+  min-width: 0;
+}
+
+/* Texto largo: que rompa y no desborde */
+.item-prescripcion__texto,
+.item-sesion__info {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Mejoras menores de tipografía/márgenes */
+.card h3 {
+  margin-top: 0;
+  margin-bottom: var(--lumo-space-m);
+}
+
+.medico-admin-view p {
+  margin: 0;
+}

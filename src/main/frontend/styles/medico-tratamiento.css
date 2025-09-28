@@ -1,0 +1,38 @@
+.medico-trat-view .tratamiento-grid {
+  display: grid;
+  gap: var(--lumo-space-l);
+  grid-template-columns: 1fr;
+}
+
+/* Tablet */
+@media (min-width: 900px) {
+  .medico-trat-view .tratamiento-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Desktop */
+@media (min-width: 1280px) {
+  .medico-trat-view .tratamiento-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  padding: var(--lumo-space-m);
+  border-radius: var(--lumo-border-radius-l);
+  background: var(--lumo-base-color);
+  box-shadow: var(--lumo-box-shadow-s);
+  min-width: 0;
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: var(--lumo-space-m);
+}
+
+.linea {
+  margin: 0 0 var(--lumo-space-s) 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

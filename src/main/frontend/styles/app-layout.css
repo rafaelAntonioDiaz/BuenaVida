@@ -1,0 +1,28 @@
+/* frontend/styles/app-layout.css */
+.app-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lumo-space-m);
+  align-items: center;
+}
+
+.app-topbar h1 {
+  margin: 0;
+}
+
+@media (max-width: 840px) {
+  .app-topbar {
+    padding: var(--lumo-space-s);
+  }
+
+  .app-topbar h1 {
+    font-size: var(--lumo-font-size-l);
+    flex-basis: 100%; /* el logo ocupa su propia fila */
+  }
+
+  /* En móvil, enlaces y botones toman ancho completo para evitar desbordes */
+  .app-topbar a,
+  .app-topbar vaadin-button {
+    width: 100%;
+  }
+}
