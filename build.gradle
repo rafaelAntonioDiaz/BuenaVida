@@ -62,5 +62,9 @@ vaadin {
     // Habilitar modo producción en el build
     productionMode = true
 }
+// Deshabilitar generación de JAR plain (sin dependencias)
+tasks.named('jar') {
+    enabled = false
+}
 
 

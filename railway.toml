@@ -3,4 +3,4 @@ builder = "HEROKU"
 buildCommand = "./gradlew clean build -x check -x test -Pproduction"
 
 [deploy]
-startCommand = "java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/*.jar"
+startCommand = "java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/*-SNAPSHOT.jar"
