@@ -75,15 +75,6 @@ public class PacienteView extends VerticalLayout {
             }
         }, this::mostrarMensajeNoAutenticado);
 
-        // 🚀 Lanzamos la notificación dummy a los 5 segundos de entrar aquí
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000);
-                Broadcaster.broadcast("📅 Tu cita fue confirmada por el médico ✅");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
     }
 
     private void construirDashboard(Paciente paciente, HistoriaClinica hc) {
@@ -115,7 +106,15 @@ public class PacienteView extends VerticalLayout {
         antecedentes.addClassName("card");
         antecedentes.getElement().getStyle().set("grid-area", "antecedentes");
 
-        grid.add(bienvenida, perfil, planClinico, agenda, estados, antecedentes);
+        Button solicitarPermisoNotificaciones = new Button("Habilitar Notificaciones", e -> {
+            UI.getCurrent().getPage().executeJs(
+                    "if (window.Notification && Notification.permission !== 'granted') {" +
+                            " Notification.requestPermission();" +
+                            "}"
+            );
+        });
+
+        grid.add(bienvenida, solicitarPermisoNotificaciones, perfil, planClinico, agenda, estados, antecedentes);
 
         VerticalLayout wrapper = new VerticalLayout(grid);
         wrapper.setWidthFull();
@@ -162,19 +161,17 @@ public class PacienteView extends VerticalLayout {
      * Método que recibe una confirmación desde el Broadcaster.
      * Muestra un aviso en pantalla (notificación de Vaadin + notificación nativa del navegador).
      */
+    // Recibe mensajes del Broadcaster y muestra notificación nativa
     public void mostrarConfirmacion(String mensaje) {
         UI ui = UI.getCurrent();
         if (ui != null) {
             ui.access(() -> {
-                // Notificación dentro de la aplicación (Vaadin)
-                Notification.show(mensaje, 5000, Notification.Position.MIDDLE);
-
-                // Notificación nativa del navegador (tipo WhatsApp, Gmail, etc.)
+                // Solo notificación nativa del navegador
                 ui.getPage().executeJs(
                         "if (window.Notification && Notification.permission === 'granted') {" +
                                 " new Notification($0);" +
                                 "} else if (window.Notification && Notification.permission !== 'denied') {" +
-                                " Notification.requestPermission().then(p => { if(p==='granted'){ new Notification($0);} });" +
+                                " Notification.requestPermission().then(p => { if(p === 'granted') { new Notification($0); } });" +
                                 "}", mensaje
                 );
             });

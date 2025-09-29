@@ -16,12 +16,12 @@ public class Broadcaster {
 
     /**
      * Registra un nuevo listener (ej: un paciente en su vista).
-     * Retorna un Registration para que luego se pueda desuscribir.
+     * Retorna un Registration para que luego se pueda de-suscribir.
      */
     public static Registration register(Consumer<String> listener) {
         listeners.add(listener);
 
-        // Devuelve un "desuscriptor" que elimina al listener cuando ya no se necesite
+        // Devuelve un "de-suscriptor" que elimina al listener cuando ya no se necesite
         return () -> listeners.remove(listener);
     }
 

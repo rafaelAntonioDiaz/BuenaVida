@@ -18,7 +18,6 @@ import java.util.Map;
 public class NotificacionServiceCompleto implements NotificacionService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificacionServiceCompleto.class);
-
     private final NotificacionEnviadaRepository notificacionRepository;
     private final NotificacionNativaService notificacionNativaService;
 
@@ -28,55 +27,59 @@ public class NotificacionServiceCompleto implements NotificacionService {
         this.notificacionNativaService = notificacionNativaService;
     }
 
+    // Envía recordatorio al paciente, evitando duplicados
     @Override
     public void enviarRecordatorioPaciente(Sesion sesion) {
-        // Verificar duplicados
         LocalDateTime hace24h = LocalDateTime.now().minusHours(24);
-
         if (notificacionRepository.existeNotificacionEnviada(
                 sesion.getId(),
                 NotificacionEnviada.TipoNotificacion.RECORDATORIO_PACIENTE,
                 hace24h)) {
-            log.debug("Recordatorio ya enviado para sesión {} en las últimas 24h", sesion.getId());
-            return;
+            return; // Evita duplicados
         }
-
-        boolean nativoEnviado = enviarNotificacionNativa(sesion);
-
-        log.info("Recordatorios enviados para sesión {}: Nativo={}",
-                sesion.getId(),  nativoEnviado);
+        enviarNotificacionNativa(sesion, NotificacionEnviada.TipoNotificacion.RECORDATORIO_PACIENTE,
+                "Recordatorio: Tienes una cita programada para el " +
+                        sesion.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
     }
 
-    private boolean enviarNotificacionNativa(Sesion sesion) {
-        try {
-            notificacionNativaService.enviarNotificacionNativaCita(sesion);
+    // Envía confirmación al paciente
+    @Override
+    public void enviarConfirmacionPaciente(Sesion sesion, String mensaje) {
+        LocalDateTime hace24h = LocalDateTime.now().minusHours(24);
+        if (notificacionRepository.existeNotificacionEnviada(
+                sesion.getId(),
+                NotificacionEnviada.TipoNotificacion.CONFIRMACION_PACIENTE,
+                hace24h)) {
+            return; // Evita duplicados
+        }
+        enviarNotificacionNativa(sesion, NotificacionEnviada.TipoNotificacion.CONFIRMACION_PACIENTE, mensaje);
+    }
 
-            // Registrar intento (las notificaciones nativas son locales, así que asumimos éxito)
+    // Envía notificación nativa y registra en la base de datos
+    private void enviarNotificacionNativa(Sesion sesion, NotificacionEnviada.TipoNotificacion tipo, String mensaje) {
+        try {
+            // Envía la notificación nativa
+            notificacionNativaService.enviarNotificacionNativaCita(sesion);
+            // Registra en la base de datos
             NotificacionEnviada notificacion = new NotificacionEnviada(
                     sesion.getId(),
-                    NotificacionEnviada.TipoNotificacion.RECORDATORIO_PACIENTE,
-                    NotificacionEnviada.CanalNotificacion.PUSH, // Usamos PUSH como categoría
+                    tipo,
+                    NotificacionEnviada.CanalNotificacion.PUSH,
                     "native-notification"
             );
-
             notificacion.setEstado(NotificacionEnviada.EstadoNotificacion.ENVIADA);
             notificacionRepository.save(notificacion);
-
-            return true;
-
         } catch (Exception e) {
-            log.error("Error enviando notificación nativa para sesión {}: {}", sesion.getId(), e.getMessage());
-            return false;
+            log.warn("Error enviando notificación {} para sesión {}: {}", tipo, sesion.getId(), e.getMessage());
         }
     }
 
     @Override
     public void enviarRecordatorioMedico(Sesion sesion) {
-        // Implementación para recordatorio al médico
-
+        // Implementar si es necesario
     }
 
     public void reenviarNotificacionesFallidas() {
-
+        // Implementar si es necesario
     }
 }

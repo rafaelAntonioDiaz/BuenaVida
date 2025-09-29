@@ -3,7 +3,6 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.tareas;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionNativaService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
-import com.ElihuAnalytics.ConsultorioAcupuntura.util.Broadcaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,43 +24,36 @@ public class RecordatorioCitasScheduler {
         this.notificacionNativaService = notificacionNativaService;
     }
 
-    // Ejecutar cada 15 minutos para recordatorios
+    // Ejecuta cada 15 minutos para enviar recordatorios de citas próximas
     @Scheduled(cron = "0 */15 * * * *")
     public void enviarRecordatorios() {
-        log.debug("Iniciando proceso de recordatorios...");
-
         try {
             LocalDateTime ahora = LocalDateTime.now();
             LocalDateTime en2h = ahora.plusHours(2);
 
             List<Sesion> proximasSesiones = sesionService.buscarPendientesEntre(ahora, en2h);
-
-            log.info("Encontradas {} sesiones próximas para recordatorio", proximasSesiones.size());
+            if (proximasSesiones.isEmpty()) {
+                return; // No loggear si no hay sesiones
+            }
 
             int recordatoriosEnviados = 0;
             for (Sesion sesion : proximasSesiones) {
-                Broadcaster.broadcast("Recordatorio: tienes una cita a las "
-                        + sesion.getFecha().toLocalTime());
                 try {
-                    // 🚀 Solo notificación nativa
+                    // Envía notificación nativa para la sesión
                     notificacionNativaService.enviarNotificacionNativaCita(sesion);
                     recordatoriosEnviados++;
                 } catch (Exception e) {
-                    log.error("Error enviando recordatorio para sesión {}: {}", sesion.getId(), e.getMessage());
+                    log.warn("Error enviando recordatorio para sesión {}: {}", sesion.getId(), e.getMessage());
                 }
             }
 
-            log.info("Proceso de recordatorios completado: {}/{} sesiones procesadas",
-                    recordatoriosEnviados, proximasSesiones.size());
+            // Log solo si se enviaron recordatorios
+            if (recordatoriosEnviados > 0) {
+                log.info("Recordatorios enviados: {}/{}", recordatoriosEnviados, proximasSesiones.size());
+            }
 
         } catch (Exception e) {
-            log.error("Error en proceso de recordatorios: {}", e.getMessage(), e);
+            log.warn("Error general en tarea de recordatorios: {}", e.getMessage());
         }
-    }
-
-    // Puedes eliminar este si ya no manejas reintentos por correo
-    @Scheduled(cron = "0 0 * * * *")
-    public void reenviarNotificacionesFallidas() {
-        log.debug("Reenvío de notificaciones fallidas deshabilitado porque ahora solo usamos nativas.");
     }
 }

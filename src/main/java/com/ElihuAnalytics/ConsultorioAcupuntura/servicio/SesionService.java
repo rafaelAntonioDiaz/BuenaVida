@@ -81,35 +81,38 @@ public class SesionService {
         });
     }
     //Confirmar sesión (implementación defensiva sin romper tu modelo)
+// Confirma una sesión y actualiza su estado
     public Optional<Sesion> confirmarSesion(Long sesionId) {
         return sesionRepository.findById(sesionId).map(s -> {
             boolean actualizado = false;
 
-            // Intentar marcar flags de confirmación si existen
+            // Intenta actualizar campos de confirmación si existen
             try { s.getClass().getMethod("setConfirmada", boolean.class).invoke(s, true); actualizado = true; } catch (Exception ignore) {}
             try { s.getClass().getMethod("setConfirmado", Boolean.class).invoke(s, Boolean.TRUE); actualizado = true; } catch (Exception ignore) {}
             try { s.getClass().getMethod("setConfirmado", boolean.class).invoke(s, true); actualizado = true; } catch (Exception ignore) {}
 
-            // Intentar setear timestamp de confirmación si existe
+            // Intenta setear timestamp de confirmación
             LocalDateTime ahora = LocalDateTime.now();
             try { s.getClass().getMethod("setConfirmadaEn", LocalDateTime.class).invoke(s, ahora); actualizado = true; } catch (Exception ignore) {}
             try { s.getClass().getMethod("setConfirmadoEn", LocalDateTime.class).invoke(s, ahora); actualizado = true; } catch (Exception ignore) {}
             try { s.getClass().getMethod("setFechaConfirmacion", LocalDateTime.class).invoke(s, ahora); actualizado = true; } catch (Exception ignore) {}
 
             if (!actualizado) {
-                log.debug("Sesión {} confirmada (sin campos específicos de confirmación en la entidad).", s.getId());
+                log.warn("Sesión {} confirmada (sin campos específicos de confirmación).", s.getId());
             }
-            return sesionRepository.save(s);
+
+            // Guarda la sesión actualizada
+            try {
+                return sesionRepository.save(s);
+            } catch (Exception e) {
+                log.warn("Error al guardar sesión confirmada {}: {}", s.getId(), e.getMessage());
+                return null;
+            }
         });
     }
-
     // NUEVO: Enviar recordatorio (placeholder; conecta tu servicio real de notificaciones aquí)
     public void enviarRecordatorioSesion(Long sesionId) {
         sesionRepository.findById(sesionId).ifPresent(s -> {
-            log.info("Recordatorio preparado para sesión {} · {} {}",
-                    s.getId(),
-                    s.getFecha().toLocalDate(),
-                    s.getFecha().toLocalTime());
         });
     }
     public Optional<Sesion> buscarPorId(Long sesionId) {

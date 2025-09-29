@@ -57,7 +57,8 @@ public class NotificacionEnviada {
         RECORDATORIO_MEDICO,
         CONFIRMACION_CITA,
         CANCELACION_CITA,
-        REPROGRAMACION_CITA
+        REPROGRAMACION_CITA,
+        CONFIRMACION_PACIENTE
     }
 
     public enum CanalNotificacion {

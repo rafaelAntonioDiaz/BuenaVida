@@ -162,13 +162,14 @@ public class ConfirmacionCitasView extends VerticalLayout {
         Div row = new Div();
         row.addClassName("item-sesion");
 
+        // Muestra info de la sesión
         String cab = FECHA.format(s.getFecha()) + " " + HORA.format(s.getFecha());
         long mins = Math.max(0, Duration.between(LocalDateTime.now(), s.getFecha()).toMinutes());
         String lugar = Optional.ofNullable(s.getLugar()).filter(v -> !v.isBlank()).map(v -> " · Lugar: " + v).orElse("");
-
         Paragraph info = new Paragraph(cab + " · " + s.getMotivo() + lugar + " · faltan " + mins + " min");
         info.addClassName("item-sesion__info");
 
+        // Botón para confirmar
         Button confirmar = new Button("Confirmar", e -> {
             if (!puedeConfirmarseHoyConAnticipo(s)) {
                 Notification.show("La confirmación debe realizarse el mismo día y al menos 2 horas antes de la sesión.");
@@ -176,7 +177,9 @@ public class ConfirmacionCitasView extends VerticalLayout {
             }
             try {
                 sesionService.confirmarSesion(s.getId());
-                Notification.show("Sesión confirmada.");
+                String mensaje = "Tu cita ha sido confirmada para el " + FECHA.format(s.getFecha()) + " a las " + HORA.format(s.getFecha());
+                notificacionService.enviarConfirmacionPaciente(s, mensaje);
+                Notification.show("Sesión confirmada y notificación enviada al paciente.");
                 UI.getCurrent().getPage().reload();
             } catch (Exception ex) {
                 Notification.show("No se pudo confirmar la sesión: " + ex.getMessage());
@@ -185,6 +188,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
         confirmar.getElement().getThemeList().add("primary");
         confirmar.setEnabled(puedeConfirmarseHoyConAnticipo(s));
 
+        // Botón para enviar recordatorio
         Button recordatorio = new Button("Recordatorio", e -> {
             try {
                 notificacionService.enviarRecordatorioPaciente(s);
@@ -195,6 +199,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
             }
         });
 
+        // Botón para cancelar la sesión
         Button cancelar = new Button("Cancelar", e -> {
             Dialog cd = new Dialog();
             cd.setHeaderTitle("Cancelar sesión");
@@ -206,6 +211,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
                 UI.getCurrent().getPage().reload();
             });
             Button no = new Button("No", ev -> cd.close());
+
             HorizontalLayout acciones = new HorizontalLayout(ok, no);
             acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
             cd.getFooter().add(acciones);

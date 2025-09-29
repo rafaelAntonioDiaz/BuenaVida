@@ -21,10 +21,12 @@ public class TestController {
         this.sesionService = sesionService;
     }
 
+    // Endpoint para probar notificaciones para una sesión específica
     @GetMapping("/notificacion/{id}")
     public String testNotificacion(@PathVariable Long id) {
         Sesion sesion = sesionService.buscarPorId(id)
                 .orElseThrow(() -> new RuntimeException("Sesión no encontrada con id: " + id));
+        // Envía notificación nativa
         notificacionNativaService.enviarNotificacionNativaCita(sesion);
         return "✅ Notificación enviada para sesión " + id;
     }

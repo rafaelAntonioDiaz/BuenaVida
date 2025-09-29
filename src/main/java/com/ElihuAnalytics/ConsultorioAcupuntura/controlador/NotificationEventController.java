@@ -19,13 +19,15 @@ public class NotificationEventController {
         this.sesionService = sesionService;
     }
 
+    // Maneja eventos de notificaciones (clicks, acciones)
     @PostMapping("/events")
     public ResponseEntity<Map<String, Object>> handleNotificationEvent(@RequestBody Map<String, Object> payload) {
         try {
             String event = (String) payload.get("event");
             Map<String, Object> data = (Map<String, Object>) payload.get("data");
 
-            log.info("Evento de notificación recibido: {} con data: {}", event, data);
+            // Log solo en DEBUG para eventos recibidos
+            log.debug("Evento de notificación recibido: {} con data: {}", event, data);
 
             switch (event) {
                 case "notification_clicked":
@@ -47,7 +49,7 @@ public class NotificationEventController {
             return ResponseEntity.ok(Map.of("success", true, "message", "Evento procesado"));
 
         } catch (Exception e) {
-            log.error("Error procesando evento de notificación: {}", e.getMessage());
+            log.warn("Error procesando evento de notificación: {}", e.getMessage());
             return ResponseEntity.internalServerError()
                     .body(Map.of("success", false, "message", "Error procesando evento"));
         }
@@ -57,8 +59,7 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.info("Usuario clickeó notificación para sesión: {}", sesionId);
-            // Aquí puedes agregar lógica adicional, como tracking de engagement
+            log.debug("Usuario clickeó notificación para sesión: {}", sesionId);
         }
     }
 
@@ -66,10 +67,9 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.info("Confirmando cita desde notificación nativa: {}", sesionId);
-
+            log.debug("Confirmando cita desde notificación nativa: {}", sesionId);
             sesionService.confirmarSesion(sesionId).ifPresentOrElse(
-                    sesion -> log.info("Cita confirmada exitosamente: {}", sesion.getId()),
+                    sesion -> log.debug("Cita confirmada: {}", sesion.getId()),
                     () -> log.warn("No se pudo confirmar la cita: {}", sesionId)
             );
         }
@@ -79,10 +79,9 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.info("Cancelando cita desde notificación nativa: {}", sesionId);
-
+            log.debug("Cancelando cita desde notificación nativa: {}", sesionId);
             sesionService.cancelarSesion(sesionId).ifPresentOrElse(
-                    sesion -> log.info("Cita cancelada exitosamente: {}", sesion.getId()),
+                    sesion -> log.debug("Cita cancelada: {}", sesion.getId()),
                     () -> log.warn("No se pudo cancelar la cita: {}", sesionId)
             );
         }
@@ -92,8 +91,7 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.info("Solicitud de reagendamiento desde notificación nativa: {}", sesionId);
-            // La lógica de reagendamiento se manejará abriendo la aplicación
+            log.debug("Solicitud de reagendamiento desde notificación nativa: {}", sesionId);
         }
     }
 }

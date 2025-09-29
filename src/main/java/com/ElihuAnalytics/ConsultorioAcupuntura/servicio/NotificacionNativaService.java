@@ -16,90 +16,52 @@ public class NotificacionNativaService {
     private static final Logger log = LoggerFactory.getLogger(NotificacionNativaService.class);
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
+    // Envía notificación nativa al navegador si hay UI activa
     public void enviarNotificacionNativaCita(Sesion sesion) {
         try {
-            // Verificar si hay una sesión UI activa
             Optional<UI> activeUI = getActiveUI();
-
             if (activeUI.isPresent()) {
                 UI ui = activeUI.get();
-
                 ui.access(() -> {
-                    String script = buildNotificationScript(sesion);
+                    String mensaje = "Cita programada para el " + sesion.getFecha().format(FORMATTER) +
+                            " - Motivo: " + escaparTextoJavaScript(sesion.getMotivo());
+                    String script = buildNotificationScript(mensaje);
                     ui.getPage().executeJs(script);
                 });
-
-                log.info("Notificación nativa enviada para sesión: {}", sesion.getId());
-            } else {
-                log.debug("No hay UI activa para enviar notificación nativa, sesión: {}", sesion.getId());
-            }
-
+            } // No loggear si no hay UI; es un caso esperado
         } catch (Exception e) {
-            log.error("Error enviando notificación nativa para sesión {}: {}", sesion.getId(), e.getMessage());
+            log.warn("Error enviando notificación nativa para sesión {}: {}", sesion.getId(), e.getMessage());
         }
     }
 
-    private String buildNotificationScript(Sesion sesion) {
-        String fecha = sesion.getFecha().format(FORMATTER);
-        String paciente = escaparTextoJavaScript(sesion.getPaciente().getNombres());
-        String motivo = escaparTextoJavaScript(sesion.getMotivo());
-        String lugar = sesion.getLugar() != null ? escaparTextoJavaScript(sesion.getLugar()) : "";
-
+    // Construye el script JS para la notificación nativa
+    private String buildNotificationScript(String mensaje) {
+        String textoEscapado = escaparTextoJavaScript(mensaje);
         return String.format(
-                "if (window.notificationService) {" +
-                        "  window.notificationService.showAppointmentConfirmation(%d, '%s', '%s', '%s');" +
-                        "} else {" +
-                        "  console.warn('NotificationService no está disponible');" +
-                        "}",
-                sesion.getId(), fecha, paciente, motivo
+                "if (window.Notification && Notification.permission === 'granted') {" +
+                        "  new Notification('%s');" +
+                        "} else if (window.Notification && Notification.permission !== 'denied') {" +
+                        "  Notification.requestPermission().then(p => { if(p === 'granted') { new Notification('%s'); } });" +
+                        "}", textoEscapado, textoEscapado
         );
     }
 
+    // Escapa texto para evitar inyecciones en JS
     private String escaparTextoJavaScript(String texto) {
         if (texto == null) return "";
         return texto.replace("'", "\\'").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
+    // Obtiene la UI activa sin generar logs
     private Optional<UI> getActiveUI() {
         try {
             VaadinSession session = VaadinSession.getCurrent();
             if (session != null) {
                 return session.getUIs().stream().findFirst();
             }
-        } catch (Exception e) {
-            log.debug("No se pudo obtener UI activa: {}", e.getMessage());
+        } catch (Exception ignored) {
+            // No loggear; es normal en contextos sin UI
         }
         return Optional.empty();
-    }
-
-    public void enviarNotificacionProgramada(Sesion sesion, long delayMillis) {
-        Optional<UI> activeUI = getActiveUI();
-
-        if (activeUI.isPresent()) {
-            UI ui = activeUI.get();
-
-            ui.access(() -> {
-                String script = String.format(
-                        "if (window.notificationService) {" +
-                                "  const scheduledTime = Date.now() + %d;" +
-                                "  window.notificationService.scheduleNotification(" +
-                                "    '🏥 Recordatorio de Cita'," +
-                                "    {" +
-                                "      body: 'Tu cita de acupuntura es en 2 horas'," +
-                                "      icon: '/icons/icon-192x192.png'," +
-                                "      requireInteraction: true," +
-                                "      data: { sesionId: %d }" +
-                                "    }," +
-                                "    scheduledTime" +
-                                "  );" +
-                                "}",
-                        delayMillis, sesion.getId()
-                );
-
-                ui.getPage().executeJs(script);
-            });
-
-            log.info("Notificación programada para sesión {} en {} ms", sesion.getId(), delayMillis);
-        }
     }
 }
