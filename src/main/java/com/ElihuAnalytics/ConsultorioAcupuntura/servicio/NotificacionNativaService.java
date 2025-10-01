@@ -16,22 +16,19 @@ public class NotificacionNativaService {
     private static final Logger log = LoggerFactory.getLogger(NotificacionNativaService.class);
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    // Envía notificación nativa al navegador si hay UI activa
+    // Envía notificación nativa solo si hay UI activa
     public void enviarNotificacionNativaCita(Sesion sesion) {
-        try {
-            Optional<UI> activeUI = getActiveUI();
-            if (activeUI.isPresent()) {
-                UI ui = activeUI.get();
-                ui.access(() -> {
-                    String mensaje = "Cita programada para el " + sesion.getFecha().format(FORMATTER) +
-                            " - Motivo: " + escaparTextoJavaScript(sesion.getMotivo());
-                    String script = buildNotificationScript(mensaje);
-                    ui.getPage().executeJs(script);
-                });
-            } // No loggear si no hay UI; es un caso esperado
-        } catch (Exception e) {
-            log.warn("Error enviando notificación nativa para sesión {}: {}", sesion.getId(), e.getMessage());
+        Optional<UI> activeUI = getActiveUI();
+        if (activeUI.isEmpty()) {
+            return; // No loggear; es un caso esperado en tareas programadas
         }
+        UI ui = activeUI.get();
+        ui.access(() -> {
+            String mensaje = "Cita programada para el " + sesion.getFecha().format(FORMATTER) +
+                    " - Motivo: " + escaparTextoJavaScript(sesion.getMotivo());
+            String script = buildNotificationScript(mensaje);
+            ui.getPage().executeJs(script);
+        });
     }
 
     // Construye el script JS para la notificación nativa

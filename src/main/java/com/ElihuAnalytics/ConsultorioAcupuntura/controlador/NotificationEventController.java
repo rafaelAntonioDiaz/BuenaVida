@@ -22,37 +22,30 @@ public class NotificationEventController {
     // Maneja eventos de notificaciones (clicks, acciones)
     @PostMapping("/events")
     public ResponseEntity<Map<String, Object>> handleNotificationEvent(@RequestBody Map<String, Object> payload) {
-        try {
-            String event = (String) payload.get("event");
-            Map<String, Object> data = (Map<String, Object>) payload.get("data");
+        String event = (String) payload.get("event");
+        Map<String, Object> data = (Map<String, Object>) payload.get("data");
 
-            // Log solo en DEBUG para eventos recibidos
-            log.debug("Evento de notificación recibido: {} con data: {}", event, data);
+        // Log solo en DEBUG
+        log.debug("Evento recibido: {} con data: {}", event, data);
 
-            switch (event) {
-                case "notification_clicked":
-                    handleNotificationClick(data);
-                    break;
-                case "action_confirmar":
-                    handleConfirmarCita(data);
-                    break;
-                case "action_cancelar":
-                    handleCancelarCita(data);
-                    break;
-                case "action_reagendar":
-                    handleReagendarCita(data);
-                    break;
-                default:
-                    log.warn("Evento no reconocido: {}", event);
-            }
-
-            return ResponseEntity.ok(Map.of("success", true, "message", "Evento procesado"));
-
-        } catch (Exception e) {
-            log.warn("Error procesando evento de notificación: {}", e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("success", false, "message", "Error procesando evento"));
+        switch (event) {
+            case "notification_clicked":
+                handleNotificationClick(data);
+                break;
+            case "action_confirmar":
+                handleConfirmarCita(data);
+                break;
+            case "action_cancelar":
+                handleCancelarCita(data);
+                break;
+            case "action_reagendar":
+                handleReagendarCita(data);
+                break;
+            default:
+                log.warn("Evento no reconocido: {}", event);
         }
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "Evento procesado"));
     }
 
     private void handleNotificationClick(Map<String, Object> data) {
@@ -67,7 +60,7 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.debug("Confirmando cita desde notificación nativa: {}", sesionId);
+            log.debug("Confirmando cita desde notificación: {}", sesionId);
             sesionService.confirmarSesion(sesionId).ifPresentOrElse(
                     sesion -> log.debug("Cita confirmada: {}", sesion.getId()),
                     () -> log.warn("No se pudo confirmar la cita: {}", sesionId)
@@ -79,7 +72,7 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.debug("Cancelando cita desde notificación nativa: {}", sesionId);
+            log.debug("Cancelando cita desde notificación: {}", sesionId);
             sesionService.cancelarSesion(sesionId).ifPresentOrElse(
                     sesion -> log.debug("Cita cancelada: {}", sesion.getId()),
                     () -> log.warn("No se pudo cancelar la cita: {}", sesionId)
@@ -91,7 +84,7 @@ public class NotificationEventController {
         Object sesionIdObj = data.get("sesionId");
         if (sesionIdObj != null) {
             Long sesionId = Long.valueOf(sesionIdObj.toString());
-            log.debug("Solicitud de reagendamiento desde notificación nativa: {}", sesionId);
+            log.debug("Solicitud de reagendamiento desde notificación: {}", sesionId);
         }
     }
 }

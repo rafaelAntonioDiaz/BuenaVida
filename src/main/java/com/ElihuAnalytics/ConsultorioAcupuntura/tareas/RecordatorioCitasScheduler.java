@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class RecordatorioCitasScheduler {
@@ -24,36 +25,27 @@ public class RecordatorioCitasScheduler {
         this.notificacionNativaService = notificacionNativaService;
     }
 
-    // Ejecuta cada 15 minutos para enviar recordatorios de citas próximas
-    @Scheduled(cron = "0 */15 * * * *")
+    // Ejecuta cada hora, limita a 50 sesiones
+    @Scheduled(cron = "0 0 * * * *")
     public void enviarRecordatorios() {
-        try {
-            LocalDateTime ahora = LocalDateTime.now();
-            LocalDateTime en2h = ahora.plusHours(2);
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime en2h = ahora.plusHours(2);
 
-            List<Sesion> proximasSesiones = sesionService.buscarPendientesEntre(ahora, en2h);
-            if (proximasSesiones.isEmpty()) {
-                return; // No loggear si no hay sesiones
-            }
+        List<Sesion> proximasSesiones = sesionService.buscarPendientesEntre(ahora, en2h)
+                .stream().limit(50).collect(Collectors.toList());
+        if (proximasSesiones.isEmpty()) {
+            return;
+        }
 
-            int recordatoriosEnviados = 0;
-            for (Sesion sesion : proximasSesiones) {
-                try {
-                    // Envía notificación nativa para la sesión
-                    notificacionNativaService.enviarNotificacionNativaCita(sesion);
-                    recordatoriosEnviados++;
-                } catch (Exception e) {
-                    log.warn("Error enviando recordatorio para sesión {}: {}", sesion.getId(), e.getMessage());
-                }
-            }
+        int recordatoriosEnviados = 0;
+        for (Sesion sesion : proximasSesiones) {
+            notificacionNativaService.enviarNotificacionNativaCita(sesion);
+            recordatoriosEnviados++;
+        }
 
-            // Log solo si se enviaron recordatorios
-            if (recordatoriosEnviados > 0) {
-                log.info("Recordatorios enviados: {}/{}", recordatoriosEnviados, proximasSesiones.size());
-            }
-
-        } catch (Exception e) {
-            log.warn("Error general en tarea de recordatorios: {}", e.getMessage());
+        // Solo loguear si hay problemas (con WARN)
+        if (recordatoriosEnviados > 0 && recordatoriosEnviados < proximasSesiones.size()) {
+            log.warn("Solo se enviaron {} de {} recordatorios.", recordatoriosEnviados, proximasSesiones.size());
         }
     }
 }

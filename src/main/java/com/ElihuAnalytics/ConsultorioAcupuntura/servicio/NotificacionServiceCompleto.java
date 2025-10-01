@@ -57,21 +57,17 @@ public class NotificacionServiceCompleto implements NotificacionService {
 
     // Envía notificación nativa y registra en la base de datos
     private void enviarNotificacionNativa(Sesion sesion, NotificacionEnviada.TipoNotificacion tipo, String mensaje) {
-        try {
-            // Envía la notificación nativa
-            notificacionNativaService.enviarNotificacionNativaCita(sesion);
-            // Registra en la base de datos
-            NotificacionEnviada notificacion = new NotificacionEnviada(
-                    sesion.getId(),
-                    tipo,
-                    NotificacionEnviada.CanalNotificacion.PUSH,
-                    "native-notification"
-            );
-            notificacion.setEstado(NotificacionEnviada.EstadoNotificacion.ENVIADA);
-            notificacionRepository.save(notificacion);
-        } catch (Exception e) {
-            log.warn("Error enviando notificación {} para sesión {}: {}", tipo, sesion.getId(), e.getMessage());
-        }
+        // Envía la notificación nativa
+        notificacionNativaService.enviarNotificacionNativaCita(sesion);
+        // Registra en la base de datos
+        NotificacionEnviada notificacion = new NotificacionEnviada(
+                sesion.getId(),
+                tipo,
+                NotificacionEnviada.CanalNotificacion.PUSH,
+                "native-notification"
+        );
+        notificacion.setEstado(NotificacionEnviada.EstadoNotificacion.ENVIADA);
+        notificacionRepository.save(notificacion);
     }
 
     @Override
