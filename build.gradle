@@ -39,7 +39,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation enforcedPlatform("com.vaadin:vaadin-bom:24.8.4")
-    implementation 'mysql:mysql-connector-java:8.0.43'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation "com.vaadin:vaadin-spring-boot-starter:24.8.4"
 
