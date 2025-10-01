@@ -38,11 +38,10 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-crypto'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
-// build.gradle
     implementation enforcedPlatform("com.vaadin:vaadin-bom:24.8.4")
-
+    implementation 'mysql:mysql-connector-java:8.0.43'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation "com.vaadin:vaadin-spring-boot-starter:24.8.4"
-	//implementation "com.vaadin:vaadin-upload-flow:24.8.4"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -50,8 +49,6 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
-
-
     testImplementation 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
