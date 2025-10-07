@@ -35,11 +35,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Eliminada redundancia
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation enforcedPlatform("com.vaadin:vaadin-bom:24.8.4")
     implementation 'com.vaadin:vaadin-spring-boot-starter:24.8.4'
-
+    implementation 'com.sendgrid:sendgrid-java:4.10.2' // Biblioteca para SendGrid API (HTTP)
     // Excluir Neo4j explícitamente
     implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
         exclude group: 'org.neo4j'
