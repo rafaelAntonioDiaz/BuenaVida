@@ -1,7 +1,7 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.tareas;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionNativaService;
+import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,41 +10,50 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Scheduler para enviar recordatorios automáticos 2 horas antes de la cita.
+ */
 @Component
 public class RecordatorioCitasScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(RecordatorioCitasScheduler.class);
     private final SesionService sesionService;
-    private final NotificacionNativaService notificacionNativaService;
+    private final NotificacionService notificacionService;
 
-    public RecordatorioCitasScheduler(SesionService sesionService,
-                                      NotificacionNativaService notificacionNativaService) {
+    public RecordatorioCitasScheduler(SesionService sesionService, NotificacionService notificacionService) {
         this.sesionService = sesionService;
-        this.notificacionNativaService = notificacionNativaService;
+        this.notificacionService = notificacionService;
     }
 
-    // Ejecuta cada hora, limita a 50 sesiones
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(fixedRate = 600000) // Cada 10 minutos
     public void enviarRecordatorios() {
         LocalDateTime ahora = LocalDateTime.now();
-        LocalDateTime en2h = ahora.plusHours(2);
+        LocalDateTime ventanaInicio = ahora.plusHours(2).minusMinutes(5);
+        LocalDateTime ventanaFin = ahora.plusHours(2).plusMinutes(5);
 
-        List<Sesion> proximasSesiones = sesionService.buscarPendientesEntre(ahora, en2h)
-                .stream().limit(50).collect(Collectors.toList());
+        List<Sesion> proximasSesiones = sesionService.buscarPendientesEntre(ventanaInicio, ventanaFin);
         if (proximasSesiones.isEmpty()) {
             return;
         }
 
         int recordatoriosEnviados = 0;
         for (Sesion sesion : proximasSesiones) {
-            notificacionNativaService.enviarNotificacionNativaCita(sesion);
-            recordatoriosEnviados++;
+            if (sesion.getEstado() == Sesion.EstadoSesion.CONFIRMADA && !sesion.isRecordatorioEnviado()) {
+                try {
+                    notificacionService.enviarRecordatorioPaciente(sesion);
+                    notificacionService.enviarRecordatorioMedico(sesion);
+                    sesion.setRecordatorioEnviado(true);
+                    sesionService.guardarSesion(sesion); // Actualizar en BD
+                    recordatoriosEnviados++;
+                    log.info("Recordatorios enviados para sesión ID: {}", sesion.getId());
+                } catch (Exception e) {
+                    log.warn("Error al enviar recordatorios para sesión ID {}: {}", sesion.getId(), e.getMessage());
+                }
+            }
         }
 
-        // Solo loguear si hay problemas (con WARN)
-        if (recordatoriosEnviados > 0 && recordatoriosEnviados < proximasSesiones.size()) {
+        if (recordatoriosEnviados < proximasSesiones.size()) {
             log.warn("Solo se enviaron {} de {} recordatorios.", recordatoriosEnviados, proximasSesiones.size());
         }
     }
