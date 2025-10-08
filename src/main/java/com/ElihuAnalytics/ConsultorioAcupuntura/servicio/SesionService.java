@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio para gestionar sesiones de citas.
+ */
 @Service
 public class SesionService {
 
@@ -44,7 +47,6 @@ public class SesionService {
                 .collect(Collectors.toList());
     }
 
-    // Disponibilidad con ventana de desplazamiento
     public boolean estaDisponible(LocalDateTime inicio, Duration duracion) {
         LocalDateTime ventanaInicio = inicio.minusHours(1);
         LocalDateTime ventanaFin = inicio.plus(duracion).plusHours(1);
@@ -54,7 +56,6 @@ public class SesionService {
         return conflictos == 0;
     }
 
-    // Disponibilidad excluyendo una sesión (para reprogramar)
     public boolean estaDisponibleExcluyendo(LocalDateTime inicio, Duration duracion, Long excluirSesionId) {
         LocalDateTime ventanaInicio = inicio.minusHours(1);
         LocalDateTime ventanaFin = inicio.plus(duracion).plusHours(1);
@@ -80,51 +81,31 @@ public class SesionService {
             return Optional.of(sesionRepository.save(s));
         });
     }
-    //Confirmar sesión (implementación defensiva sin romper tu modelo)
-// Confirma una sesión y actualiza su estado
+
     public Optional<Sesion> confirmarSesion(Long sesionId) {
         return sesionRepository.findById(sesionId).map(s -> {
-            boolean actualizado = false;
-
-            // Intenta actualizar campos de confirmación si existen
-            try { s.getClass().getMethod("setConfirmada", boolean.class).invoke(s, true); actualizado = true; } catch (Exception ignore) {}
-            try { s.getClass().getMethod("setConfirmado", Boolean.class).invoke(s, Boolean.TRUE); actualizado = true; } catch (Exception ignore) {}
-            try { s.getClass().getMethod("setConfirmado", boolean.class).invoke(s, true); actualizado = true; } catch (Exception ignore) {}
-
-            // Intenta setear timestamp de confirmación
-            LocalDateTime ahora = LocalDateTime.now();
-            try { s.getClass().getMethod("setConfirmadaEn", LocalDateTime.class).invoke(s, ahora); actualizado = true; } catch (Exception ignore) {}
-            try { s.getClass().getMethod("setConfirmadoEn", LocalDateTime.class).invoke(s, ahora); actualizado = true; } catch (Exception ignore) {}
-            try { s.getClass().getMethod("setFechaConfirmacion", LocalDateTime.class).invoke(s, ahora); actualizado = true; } catch (Exception ignore) {}
-
-            if (!actualizado) {
-                log.warn("Sesión {} confirmada (sin campos específicos de confirmación).", s.getId());
+            if (s.getEstado() != Sesion.EstadoSesion.PROGRAMADA) {
+                log.warn("Sesión {} no está en estado PROGRAMADA, no se puede confirmar.", s.getId());
+                return null;
             }
-
-            // Guarda la sesión actualizada
+            s.setEstado(Sesion.EstadoSesion.CONFIRMADA); // Usa estado CONFIRMADA
             try {
                 return sesionRepository.save(s);
             } catch (Exception e) {
-                log.warn("Error al guardar sesión confirmada {}: {}", s.getId(), e.getMessage());
+                log.error("Error al guardar sesión confirmada {}: {}", s.getId(), e.getMessage(), e);
                 return null;
             }
         });
     }
-    // NUEVO: Enviar recordatorio (placeholder; conecta tu servicio real de notificaciones aquí)
-    public void enviarRecordatorioSesion(Long sesionId) {
-        sesionRepository.findById(sesionId).ifPresent(s -> {
-        });
-    }
+
     public Optional<Sesion> buscarPorId(Long sesionId) {
         return sesionRepository.findById(sesionId);
     }
 
-    // NUEVO: Buscar sesiones PROGRAMADAS entre dos fechas (pendientes)
     public List<Sesion> buscarPendientesEntre(LocalDateTime desde, LocalDateTime hasta) {
         if (desde == null || hasta == null) {
             throw new IllegalArgumentException("Las fechas 'desde' y 'hasta' son obligatorias");
         }
-        // Normalizar si vienen invertidas
         LocalDateTime ini = desde.isAfter(hasta) ? hasta : desde;
         LocalDateTime fin = desde.isAfter(hasta) ? desde : hasta;
 
@@ -134,5 +115,4 @@ public class SesionService {
                 .sorted(Comparator.comparing(Sesion::getFecha))
                 .collect(Collectors.toList());
     }
-
 }

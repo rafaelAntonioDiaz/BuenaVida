@@ -6,10 +6,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Rol;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Usuario;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.PacienteRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.seguridad.AutenticacionServicio;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.FileStorageService;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.PacienteService;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
+import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.*;
 import com.ElihuAnalytics.ConsultorioAcupuntura.util.Broadcaster;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.*;
 import com.vaadin.flow.component.AttachEvent;
@@ -39,6 +36,8 @@ public class PacienteView extends VerticalLayout {
     private final SesionService sesionService;
     private final PacienteRepository pacienteRepositorio;
     private final PacienteService pacienteService;
+    private final NotificacionService notificacionService;
+
 
     @Autowired
     public PacienteView(AutenticacionServicio auth,
@@ -46,7 +45,9 @@ public class PacienteView extends VerticalLayout {
                         FileStorageService fileStorageService,
                         SesionService sesionService,
                         PacienteRepository pacienteRepositorio,
-                        PacienteService pacienteService) {
+                        PacienteService pacienteService,
+                        NotificacionService notificacionService, NotificacionService notificacionService1) {
+        this.notificacionService = notificacionService;
         this.ui = UI.getCurrent();
         this.autenticacionServicio = auth;
         this.historiaClinicaService = historiaClinicaService;
@@ -94,7 +95,7 @@ public class PacienteView extends VerticalLayout {
         planClinico.addClassName("card");
         planClinico.getElement().getStyle().set("grid-area", "planClinico");
 
-        Component agenda = new AgendaCard(paciente, sesionService);
+        Component agenda = new AgendaCard(paciente, sesionService, notificacionService);
         agenda.addClassName("card");
         agenda.getElement().getStyle().set("grid-area", "schedule");
 

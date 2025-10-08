@@ -2,7 +2,9 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Paciente;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
+import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionServiceImpl;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
+import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util.FestivosColombia;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -36,6 +38,7 @@ public class AgendaCard extends Div {
     private static final Duration DURACION_SESION = Duration.ofHours(1);
     private final Paciente paciente;
     private final SesionService sesionService;
+    private final NotificacionService notificacionService;
     private YearMonth mesMostrado = YearMonth.now();
     private final Map<LocalDate, Integer> sesionesPorDia = new HashMap<>();
     private Div calendario;
@@ -46,9 +49,10 @@ public class AgendaCard extends Div {
     private HorizontalLayout navMes;
     private Span etiquetaMes;
 
-    public AgendaCard(Paciente paciente, SesionService sesionService) {
+    public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionServiceImpl notificacionService) {
         this.paciente = paciente;
         this.sesionService = sesionService;
+        this.notificacionService = notificacionService;
         setWidthFull();
         getStyle()
                 .set("padding", "var(--lumo-space-l)")
@@ -60,7 +64,6 @@ public class AgendaCard extends Div {
         add(new H3("Programación de Sesiones"));
         navMes = construirNavMes();
         add(navMes);
-        // Contenedores para mantener el orden visual estable
         listaContainer = new Div();
         listaContainer.setWidthFull();
         listaContainer.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "8px");
@@ -70,7 +73,6 @@ public class AgendaCard extends Div {
         calendarioContainer.setWidthFull();
         add(calendarioContainer);
 
-        // Cargar datos iniciales y construir secciones
         recargarSesionesMes();
         refrescarListaSesiones();
 
@@ -78,7 +80,6 @@ public class AgendaCard extends Div {
         calendarioContainer.removeAll();
         calendarioContainer.add(calendario);
 
-        // Controles de agendamiento (el botón Agendar va AL FINAL)
         TimePicker horaPicker = new TimePicker();
         horaPicker.setLabel("Hora");
         horaPicker.setStep(Duration.ofMinutes(30));
@@ -140,7 +141,15 @@ public class AgendaCard extends Div {
             sesion.setLugar(txtDireccion);
             sesionService.guardarSesion(sesion);
 
-            Notification.show("Sesión programada: " + inicio.toLocalDate().format(FORMATO_FECHA) + " " + horaPicker.getValue());
+            // Notificar al médico
+            try {
+                notificacionService.enviarNotificacionProgramacionMedico(sesion);
+                Notification.show("Sesión programada y médico notificado: " +
+                        inicio.toLocalDate().format(FORMATO_FECHA) + " " + horaPicker.getValue());
+            } catch (Exception ex) {
+                Notification.show("Sesión programada, pero no se pudo notificar al médico: " + ex.getMessage());
+            }
+
             recargarSesionesMes();
             repintarCalendario();
             refrescarListaSesiones();
@@ -148,13 +157,9 @@ public class AgendaCard extends Div {
             direccion.clear();
         });
 
-        // Diseño responsive del formulario
         FormLayout form = new FormLayout();
         form.setWidthFull();
-        // Orden: primero campos, AL FINAL el botón Agendar
         form.add(horaPicker, motivo, direccion, agendar);
-
-        // En móvil: 1 columna. En ≥600px: 2 columnas; Motivo, Dirección y Agendar ocupan el ancho completo.
         form.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("600px", 2)
@@ -168,6 +173,7 @@ public class AgendaCard extends Div {
         add(new Paragraph("Tip: primero gestiona tus citas desde la lista. Luego selecciona un día en el calendario, llena los campos y por último pulsa Agendar."));
     }
 
+    // Resto del código igual (construirNavMes, actualizarMesMostrado, recargarSesionesMes, etc.)
     private HorizontalLayout construirNavMes() {
         Button prev = new Button("‹");
         prev.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
@@ -373,7 +379,6 @@ public class AgendaCard extends Div {
         dlg.open();
     }
 
-    // Item de detalle del día (responsive)
     private Div crearItemSesion(Dialog parent, Sesion s, LocalDate fechaDia, Runnable refrescarLista) {
         Div item = new Div();
         item.getStyle()
@@ -431,7 +436,6 @@ public class AgendaCard extends Div {
         return item;
     }
 
-    // Lista de citas (sección superior)
     private void refrescarListaSesiones() {
         listaContainer.removeAll();
 
@@ -456,7 +460,6 @@ public class AgendaCard extends Div {
         listaContainer.add(cont);
     }
 
-    // Item de la lista superior (responsive)
     private Div crearItemSesionInline(Sesion s) {
         Div item = new Div();
         item.getStyle()
@@ -595,7 +598,6 @@ public class AgendaCard extends Div {
         dlg.open();
     }
 
-    // Versión inline para la lista superior (sin parent dialog)
     private void abrirReprogramarDialogInline(Sesion s) {
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Reprogramar sesión");

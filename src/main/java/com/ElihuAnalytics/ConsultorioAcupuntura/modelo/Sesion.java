@@ -122,7 +122,8 @@ public class Sesion {
     public enum EstadoSesion {
         PROGRAMADA,
         REALIZADA,
-        CANCELADA
+        CANCELADA,
+        CONFIRMADA
     }
 
 }
