@@ -43,6 +43,9 @@ HELP.md
 pacientes-uploads/
 frontend/generated/
 src/main/frontend/generated/
+# Bundles de frontend
+src/main/bundles/
+.bundle
 # Permitir script gradlew para deployment
 !gradlew
 !gradlew.bat
