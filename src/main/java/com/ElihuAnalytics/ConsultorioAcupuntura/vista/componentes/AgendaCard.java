@@ -2,645 +2,179 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Paciente;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
-import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util.FestivosColombia;
+import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.timepicker.TimePicker;
-import java.time.*;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class AgendaCard extends Div {
+public class AgendaCard extends VerticalLayout {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter FORMATO_MES = DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es"));
-    private static final Duration DURACION_SESION = Duration.ofHours(1);
+    private static final Duration DURACION_CITA = Duration.ofHours(1); // Duración predeterminada: 1 hora
+
     private final Paciente paciente;
     private final SesionService sesionService;
     private final NotificacionService notificacionService;
-    private YearMonth mesMostrado = YearMonth.now();
-    private final Map<LocalDate, Integer> sesionesPorDia = new HashMap<>();
-    private Div calendario;
-    private Div calendarioContainer;
-    private Div listaContainer;
-    private LocalDate diaSeleccionado;
-    private Div celdaSeleccionada;
-    private HorizontalLayout navMes;
-    private Span etiquetaMes;
+
+    private DateTimePicker fechaHoraPicker;
+    private TextArea motivoField;
+    private TextField lugarField;
+    private ComboBox<Sesion> citasCombo;
 
     public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionService notificacionService) {
         this.paciente = paciente;
         this.sesionService = sesionService;
         this.notificacionService = notificacionService;
-        setWidthFull();
-        getStyle()
-                .set("padding", "var(--lumo-space-l)")
-                .set("background", "var(--lumo-base-color)")
-                .set("border-radius", "var(--lumo-border-radius-l)")
-                .set("box-shadow", "var(--lumo-box-shadow-s)")
-                .set("box-sizing", "border-box")
-                .set("min-width", "0");
-        add(new H3("Programación de Sesiones"));
-        navMes = construirNavMes();
-        add(navMes);
-        listaContainer = new Div();
-        listaContainer.setWidthFull();
-        listaContainer.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "8px");
-        add(listaContainer);
 
-        calendarioContainer = new Div();
-        calendarioContainer.setWidthFull();
-        add(calendarioContainer);
+        setWidth("400px");
+        setPadding(true);
+        setSpacing(true);
 
-        recargarSesionesMes();
-        refrescarListaSesiones();
+        H3 titulo = new H3("Agendar cita");
+        fechaHoraPicker = new DateTimePicker("Fecha y hora");
+        fechaHoraPicker.setStep(Duration.ofMinutes(30));
+        fechaHoraPicker.setMin(LocalDateTime.now());
+        motivoField = new TextArea("Motivo");
+        motivoField.setMaxLength(500);
+        lugarField = new TextField("Lugar (opcional)");
+        lugarField.setMaxLength(255);
 
-        calendario = construirCalendarioMes();
-        calendarioContainer.removeAll();
-        calendarioContainer.add(calendario);
+        Button agendar = new Button("Agendar", e -> agendarCita());
+        agendar.getElement().getThemeList().add("primary");
 
-        TimePicker horaPicker = new TimePicker();
-        horaPicker.setLabel("Hora");
-        horaPicker.setStep(Duration.ofMinutes(30));
-        horaPicker.setValue(LocalTime.of(9, 0));
-        horaPicker.setWidthFull();
+        citasCombo = new ComboBox<>("Citas programadas");
+        citasCombo.setItemLabelGenerator(s -> s.getFecha().format(FORMATO_FECHA) + " " +
+                s.getFecha().format(FORMATO_HORA) + " - " + s.getMotivo());
+        citasCombo.setWidthFull();
+        actualizarCitas();
 
-        TextField motivo = new TextField();
-        motivo.setLabel("Motivo");
-        motivo.setPlaceholder("Ej.: Control, dolor lumbar...");
-        motivo.setClearButtonVisible(true);
-        motivo.setMaxLength(120);
-        motivo.setWidthFull();
+        Button reprogramar = new Button("Reprogramar", e -> reprogramarCita());
+        reprogramar.getElement().getThemeList().add("secondary");
+        reprogramar.setEnabled(false);
+        citasCombo.addValueChangeListener(e -> reprogramar.setEnabled(e.getValue() != null));
 
-        TextField direccion = new TextField();
-        direccion.setLabel("Dirección");
-        direccion.setPlaceholder("Ej.: Calle 12 #34-56, Apto 301");
-        direccion.setClearButtonVisible(true);
-        direccion.setMaxLength(200);
-        direccion.setWidthFull();
+        HorizontalLayout botones = new HorizontalLayout(agendar, reprogramar);
+        botones.setWidthFull();
+        botones.setJustifyContentMode(JustifyContentMode.END);
 
-        Button agendar = new Button("Agendar");
-        agendar.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
-        agendar.setWidthFull();
-
-        agendar.addClickListener(e -> {
-            if (diaSeleccionado == null) {
-                Notification.show("Selecciona un día en el calendario.");
-                return;
-            }
-            if (horaPicker.getValue() == null) {
-                Notification.show("Selecciona una hora.");
-                return;
-            }
-            String txtMotivo = Optional.ofNullable(motivo.getValue()).orElse("").trim();
-            if (txtMotivo.isBlank()) {
-                Notification.show("Escribe el motivo.");
-                return;
-            }
-            String txtDireccion = Optional.ofNullable(direccion.getValue()).orElse("").trim();
-            if (txtDireccion.isBlank()) {
-                Notification.show("La dirección es obligatoria.");
-                return;
-            }
-            LocalDateTime inicio = diaSeleccionado.atTime(horaPicker.getValue());
-            if (inicio.isBefore(LocalDateTime.now())) {
-                Notification.show("No puedes agendar en el pasado.");
-                return;
-            }
-            if (!sesionService.estaDisponible(inicio, DURACION_SESION)) {
-                Notification.show("No disponible: existe otra cita en la hora previa o en la hora posterior de desplazamiento.");
-                return;
-            }
-
-            Sesion sesion = new Sesion();
-            sesion.setFecha(inicio);
-            sesion.setMotivo(txtMotivo);
-            sesion.setEstado(Sesion.EstadoSesion.PROGRAMADA);
-            sesion.setPaciente(paciente);
-            sesion.setLugar(txtDireccion);
-            sesionService.guardarSesion(sesion);
-
-            // Notificar al médico
-            try {
-                notificacionService.enviarNotificacionProgramacionMedico(sesion);
-                Notification.show("Sesión programada y médico notificado: " +
-                        inicio.toLocalDate().format(FORMATO_FECHA) + " " + horaPicker.getValue());
-            } catch (Exception ex) {
-                Notification.show("Sesión programada, pero no se pudo notificar al médico: " + ex.getMessage());
-            }
-
-            recargarSesionesMes();
-            repintarCalendario();
-            refrescarListaSesiones();
-            motivo.clear();
-            direccion.clear();
-        });
-
-        FormLayout form = new FormLayout();
-        form.setWidthFull();
-        form.add(horaPicker, motivo, direccion, agendar);
-        form.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("600px", 2)
-        );
-        form.setColspan(motivo, 2);
-        form.setColspan(direccion, 2);
-        form.setColspan(agendar, 2);
-
-        add(form);
-
-        add(new Paragraph("Tip: primero gestiona tus citas desde la lista. Luego selecciona un día en el calendario, llena los campos y por último pulsa Agendar."));
+        add(titulo, fechaHoraPicker, motivoField, lugarField, citasCombo, botones);
     }
 
-    // Resto del código igual (construirNavMes, actualizarMesMostrado, recargarSesionesMes, etc.)
-    private HorizontalLayout construirNavMes() {
-        Button prev = new Button("‹");
-        prev.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        prev.addClickListener(e -> actualizarMesMostrado(mesMostrado.minusMonths(1)));
+    private void agendarCita() {
+        LocalDateTime inicio = fechaHoraPicker.getValue();
+        String txtMotivo = motivoField.getValue();
+        String txtLugar = lugarField.getValue();
 
-        etiquetaMes = new Span(capitalizarInicialMes(FORMATO_MES.format(mesMostrado)));
-        etiquetaMes.getStyle().set("font-weight", "600");
-
-        Button next = new Button("›");
-        next.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        next.addClickListener(e -> actualizarMesMostrado(mesMostrado.plusMonths(1)));
-
-        HorizontalLayout nav = new HorizontalLayout(prev, etiquetaMes, next);
-        nav.setWidthFull();
-        nav.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        nav.setSpacing(true);
-        return nav;
-    }
-
-    private void actualizarMesMostrado(YearMonth nuevoMes) {
-        mesMostrado = nuevoMes;
-        etiquetaMes.setText(capitalizarInicialMes(FORMATO_MES.format(mesMostrado)));
-        recargarSesionesMes();
-        repintarCalendario();
-        refrescarListaSesiones();
-        if (diaSeleccionado == null || !YearMonth.from(diaSeleccionado).equals(mesMostrado)) {
-            diaSeleccionado = null;
-            if (celdaSeleccionada != null) {
-                celdaSeleccionada.getStyle().remove("box-shadow");
-                celdaSeleccionada = null;
-            }
+        if (inicio == null || inicio.isBefore(LocalDateTime.now())) {
+            Notification.show("Selecciona una fecha futura válida.");
+            return;
         }
-    }
-
-    private void recargarSesionesMes() {
-        sesionesPorDia.clear();
-        sesionService.obtenerSesionesPorPacienteYMes(paciente.getId(), mesMostrado).stream()
-                .filter(s -> s.getEstado() == Sesion.EstadoSesion.PROGRAMADA)
-                .collect(Collectors.groupingBy(s -> s.getFecha().toLocalDate(), Collectors.counting()))
-                .forEach((k, v) -> sesionesPorDia.put(k, v.intValue()));
-    }
-
-    private Div construirCalendarioMes() {
-        Div cont = new Div();
-        cont.setWidthFull();
-        cont.getStyle()
-                .set("display", "grid")
-                .set("grid-template-columns", "repeat(7, minmax(0, 1fr))")
-                .set("gap", "6px")
-                .set("box-sizing", "border-box")
-                .set("max-width", "100%")
-                .set("min-width", "0");
-
-        String[] dias = {"L", "M", "X", "J", "V", "S", "D"};
-        for (String d : dias) {
-            Div hd = new Div();
-            hd.setText(d);
-            hd.getStyle()
-                    .set("text-align", "center")
-                    .set("font-weight", "600")
-                    .set("color", "var(--lumo-secondary-text-color)")
-                    .set("min-width", "0");
-            if ("D".equals(d)) {
-                hd.getStyle().set("color", "var(--lumo-error-text-color)");
-            }
-            cont.add(hd);
-        }
-
-        LocalDate primero = mesMostrado.atDay(1);
-        int offset = primero.getDayOfWeek().getValue() - 1; // lunes=1
-        int diasMes = mesMostrado.lengthOfMonth();
-
-        for (int i = 0; i < offset; i++) cont.add(crearCeldaVacia());
-
-        for (int dia = 1; dia <= diasMes; dia++) {
-            LocalDate fecha = mesMostrado.atDay(dia);
-            int count = sesionesPorDia.getOrDefault(fecha, 0);
-            Div celda = crearCeldaDia(fecha, count);
-            cont.add(celda);
-        }
-        return cont;
-    }
-
-    private Div crearCeldaVacia() {
-        Div d = new Div();
-        d.getStyle()
-                .set("min-height", "42px")
-                .set("border-radius", "8px")
-                .set("background", "transparent")
-                .set("min-width", "0");
-        return d;
-    }
-
-    private Div crearCeldaDia(LocalDate fecha, int count) {
-        boolean esDomingo = fecha.getDayOfWeek() == DayOfWeek.SUNDAY;
-        boolean esFestivo = FestivosColombia.esFestivo(fecha);
-
-        Div cell = new Div();
-        cell.getStyle()
-                .set("min-height", "42px")
-                .set("padding", "6px")
-                .set("border-radius", "8px")
-                .set("cursor", "pointer")
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("justify-content", "space-between")
-                .set("box-sizing", "border-box")
-                .set("min-width", "0")
-                .set("overflow", "hidden");
-
-        Div num = new Div();
-        num.setText(String.valueOf(fecha.getDayOfMonth()));
-        num.getStyle().set("font-weight", "600");
-
-        if (esDomingo) {
-            num.getStyle().set("color", "var(--lumo-error-text-color)");
-            cell.getElement().setProperty("aria-label", "Domingo");
-        }
-        if (esFestivo) {
-            cell.getStyle().set("background", "var(--lumo-error-color-10pct)");
-            FestivosColombia.nombreFestivo(fecha)
-                    .ifPresent(nombre -> cell.getElement().setProperty("title", "Festivo: " + nombre));
-            if (!esDomingo) {
-                num.getStyle().set("color", "var(--lumo-error-text-color)");
-            }
-        } else if (count > 0) {
-            cell.getStyle().set("background", "var(--lumo-primary-color-10pct)");
-        }
-
-        if (fecha.equals(LocalDate.now())) {
-            cell.getStyle().set("border", "2px solid var(--lumo-primary-color-50pct)");
-        } else {
-            cell.getStyle().set("border", "1px solid var(--lumo-contrast-10pct)");
-        }
-
-        com.vaadin.flow.component.button.Button badgeBtn = null;
-        if (count > 0) {
-            badgeBtn = new com.vaadin.flow.component.button.Button(String.valueOf(count));
-            badgeBtn.addThemeVariants(
-                    com.vaadin.flow.component.button.ButtonVariant.LUMO_TERTIARY_INLINE,
-                    com.vaadin.flow.component.button.ButtonVariant.LUMO_SMALL
-            );
-            badgeBtn.getStyle()
-                    .set("min-width", "18px")
-                    .set("height", "18px")
-                    .set("line-height", "18px")
-                    .set("text-align", "center")
-                    .set("font-size", "11px")
-                    .set("color", "white")
-                    .set("background", "var(--lumo-primary-color)")
-                    .set("border-radius", "10px")
-                    .set("padding", "0 4px");
-            LocalDate fechaDetalle = fecha;
-            badgeBtn.addClickListener(e -> abrirDetalleDia(fechaDetalle));
-        }
-
-        if (badgeBtn != null) {
-            cell.add(num, badgeBtn);
-        } else {
-            cell.add(num);
-        }
-
-        cell.addClickListener(e -> {
-            if (celdaSeleccionada != null) {
-                celdaSeleccionada.getStyle().remove("box-shadow");
-            }
-            celdaSeleccionada = cell;
-            diaSeleccionado = fecha;
-            cell.getStyle().set("box-shadow", "0 0 0 2px var(--lumo-primary-color)");
-        });
-
-        return cell;
-    }
-
-    private void repintarCalendario() {
-        calendarioContainer.removeAll();
-        calendario = construirCalendarioMes();
-        calendarioContainer.add(calendario);
-    }
-
-    private void abrirDetalleDia(LocalDate fecha) {
-        Dialog dlg = new Dialog();
-        dlg.setHeaderTitle("Sesiones para " + fecha.format(FORMATO_FECHA));
-
-        Div cont = new Div();
-        cont.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "8px");
-
-        final Runnable[] refrescarLista = new Runnable[1];
-        refrescarLista[0] = () -> {
-            cont.removeAll();
-            var sesiones = sesionService.obtenerSesionesPorPacienteYDia(paciente.getId(), fecha);
-            if (sesiones.isEmpty()) {
-                cont.add(new Paragraph("No hay sesiones en este día."));
-            } else {
-                sesiones.forEach(s -> cont.add(crearItemSesion(dlg, s, fecha, refrescarLista[0])));
-            }
-        };
-        refrescarLista[0].run();
-
-        Button cerrar = new Button("Cerrar", e -> dlg.close());
-        dlg.add(cont);
-        dlg.getFooter().add(cerrar);
-        dlg.open();
-    }
-
-    private Div crearItemSesion(Dialog parent, Sesion s, LocalDate fechaDia, Runnable refrescarLista) {
-        Div item = new Div();
-        item.getStyle()
-                .set("display", "flex")
-                .set("flex-wrap", "wrap")
-                .set("align-items", "center")
-                .set("gap", "8px")
-                .set("padding", "6px 0");
-
-        String lugar = Optional.ofNullable(s.getLugar()).filter(v -> !v.isBlank()).orElse("Sin dirección");
-        String info = FORMATO_HORA.format(s.getFecha()) + " · " + s.getMotivo() + " · " + s.getEstado() + " · " + lugar;
-        Span texto = new Span(info);
-        texto.getStyle()
-                .set("flex", "1 1 280px")
-                .set("min-width", "0")
-                .set("white-space", "normal")
-                .set("overflow-wrap", "anywhere");
-
-        Button editarDireccion = new Button("Editar dirección");
-        editarDireccion.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
-        editarDireccion.addClickListener(e -> abrirEditarDireccionDialog(s, refrescarLista));
-
-        Button reprogramar = new Button("Reprogramar");
-        reprogramar.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
-        reprogramar.addClickListener(e -> abrirReprogramarDialog(parent, s, fechaDia));
-
-        Button cancelar = new Button("Cancelar");
-        cancelar.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
-        cancelar.addClickListener(e -> {
-            ConfirmDialog cd = new ConfirmDialog();
-            cd.setHeader("Cancelar sesión");
-            cd.setText("¿Confirmas cancelar esta sesión?");
-            cd.setConfirmText("Sí, cancelar");
-            cd.setCancelText("No");
-            cd.addConfirmListener(ev -> {
-                sesionService.cancelarSesion(s.getId());
-                Notification.show("Sesión cancelada.");
-                recargarSesionesMes();
-                repintarCalendario();
-                parent.close();
-                abrirDetalleDia(fechaDia);
-            });
-            cd.open();
-        });
-
-        HorizontalLayout acciones = new HorizontalLayout(editarDireccion, reprogramar, cancelar);
-        acciones.setSpacing(true);
-        acciones.setWrap(true);
-        acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        acciones.getStyle()
-                .set("flex", "0 1 320px")
-                .set("min-width", "0");
-
-        item.add(texto, acciones);
-        return item;
-    }
-
-    private void refrescarListaSesiones() {
-        listaContainer.removeAll();
-
-        Span titulo = new Span("Citas programadas del mes");
-        titulo.getStyle().set("font-weight", "600");
-        listaContainer.add(titulo);
-
-        var sesiones = sesionService.obtenerSesionesPorPacienteYMes(paciente.getId(), mesMostrado).stream()
-                .filter(s -> s.getEstado() == Sesion.EstadoSesion.PROGRAMADA)
-                .sorted(Comparator.comparing(Sesion::getFecha))
-                .collect(Collectors.toList());
-
-        if (sesiones.isEmpty()) {
-            Paragraph vacio = new Paragraph("No tienes citas programadas en este mes.");
-            listaContainer.add(vacio);
+        if (txtMotivo.isBlank()) {
+            Notification.show("El motivo es obligatorio.");
             return;
         }
 
-        Div cont = new Div();
-        cont.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "8px");
-        sesiones.forEach(s -> cont.add(crearItemSesionInline(s)));
-        listaContainer.add(cont);
+        if (!sesionService.estaDisponible(inicio, DURACION_CITA)) {
+            Notification.show("El horario seleccionado no está disponible.");
+            return;
+        }
+
+        Sesion sesion = new Sesion();
+        sesion.setFecha(inicio);
+        sesion.setMotivo(txtMotivo);
+        sesion.setEstado(Sesion.EstadoSesion.PROGRAMADA);
+        sesion.setPaciente(paciente);
+        sesion.setLugar(txtLugar.isBlank() ? null : txtLugar);
+
+        try {
+            sesionService.guardarSesion(sesion);
+            notificacionService.enviarNotificacionProgramacionMedico(sesion);
+            Notification.show("Sesión programada y médico notificado: " +
+                    inicio.format(FORMATO_FECHA) + " " + inicio.format(FORMATO_HORA));
+            actualizarCitas();
+            limpiarFormulario();
+        } catch (Exception ex) {
+            Notification.show("Sesión programada, pero no se pudo notificar al médico: " + ex.getMessage());
+        }
     }
 
-    private Div crearItemSesionInline(Sesion s) {
-        Div item = new Div();
-        item.getStyle()
-                .set("display", "flex")
-                .set("flex-wrap", "wrap")
-                .set("align-items", "center")
-                .set("gap", "8px")
-                .set("padding", "6px 0");
+    private void reprogramarCita() {
+        Sesion sesion = citasCombo.getValue();
+        if (sesion == null) {
+            Notification.show("Selecciona una cita para reprogramar.");
+            return;
+        }
 
-        String lugar = Optional.ofNullable(s.getLugar()).filter(v -> !v.isBlank()).orElse("Sin dirección");
-        String info = s.getFecha().format(FORMATO_FECHA) + " " + FORMATO_HORA.format(s.getFecha()) +
-                " · " + s.getMotivo() + " · " + s.getEstado() + " · " + lugar;
-        Span texto = new Span(info);
-        texto.getStyle()
-                .set("flex", "1 1 280px")
-                .set("min-width", "0")
-                .set("white-space", "normal")
-                .set("overflow-wrap", "anywhere");
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Reprogramar cita");
 
-        Button editarDireccion = new Button("Editar dirección");
-        editarDireccion.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
-        editarDireccion.addClickListener(e ->
-                abrirEditarDireccionDialog(s, () -> {
-                    refrescarListaSesiones();
-                    recargarSesionesMes();
-                    repintarCalendario();
-                })
-        );
-
-        Button reprogramar = new Button("Reprogramar");
-        reprogramar.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
-        reprogramar.addClickListener(e -> abrirReprogramarDialogInline(s));
-
-        Button cancelar = new Button("Cancelar");
-        cancelar.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
-        cancelar.addClickListener(e -> {
-            ConfirmDialog cd = new ConfirmDialog();
-            cd.setHeader("Cancelar sesión");
-            cd.setText("¿Confirmas cancelar esta sesión?");
-            cd.setConfirmText("Sí, cancelar");
-            cd.setCancelText("No");
-            cd.addConfirmListener(ev -> {
-                sesionService.cancelarSesion(s.getId());
-                Notification.show("Sesión cancelada.");
-                recargarSesionesMes();
-                repintarCalendario();
-                refrescarListaSesiones();
-            });
-            cd.open();
-        });
-
-        HorizontalLayout acciones = new HorizontalLayout(editarDireccion, reprogramar, cancelar);
-        acciones.setSpacing(true);
-        acciones.setWrap(true);
-        acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        acciones.getStyle()
-                .set("flex", "0 1 320px")
-                .set("min-width", "0");
-
-        item.add(texto, acciones);
-        return item;
-    }
-
-    private void abrirEditarDireccionDialog(Sesion s, Runnable onSaved) {
-        Dialog dlg = new Dialog();
-        dlg.setHeaderTitle("Editar dirección");
-
-        TextField tf = new TextField("Dirección");
-        tf.setWidthFull();
-        tf.setMaxLength(200);
-        tf.setClearButtonVisible(true);
-        tf.setPlaceholder("Dirección donde deseas ser atendido");
-        tf.setValue(Optional.ofNullable(s.getLugar()).orElse(""));
+        DateTimePicker nuevaFechaPicker = new DateTimePicker("Nueva fecha y hora");
+        nuevaFechaPicker.setStep(Duration.ofMinutes(30));
+        nuevaFechaPicker.setMin(LocalDateTime.now());
+        nuevaFechaPicker.setValue(sesion.getFecha());
 
         Button guardar = new Button("Guardar", e -> {
-            String val = Optional.ofNullable(tf.getValue()).orElse("").trim();
-            if (val.isBlank()) {
-                Notification.show("La dirección no puede estar vacía.");
+            LocalDateTime nuevaFecha = nuevaFechaPicker.getValue();
+            if (nuevaFecha == null || nuevaFecha.isBefore(LocalDateTime.now())) {
+                Notification.show("Selecciona una fecha futura válida.");
                 return;
             }
-            s.setLugar(val);
-            sesionService.guardarSesion(s);
-            Notification.show("Dirección actualizada.");
-            dlg.close();
-            if (onSaved != null) onSaved.run();
+
+            try {
+                Optional<Sesion> reprogramada = sesionService.reprogramarSesion(sesion.getId(), nuevaFecha, DURACION_CITA);
+                if (reprogramada.isPresent()) {
+                    notificacionService.enviarNotificacionProgramacionMedico(reprogramada.get());
+                    Notification.show("Cita reprogramada y médico notificado: " +
+                            nuevaFecha.format(FORMATO_FECHA) + " " + nuevaFecha.format(FORMATO_HORA));
+                    actualizarCitas();
+                    dialog.close();
+                } else {
+                    Notification.show("No se pudo reprogramar la cita: no encontrada o no válida.");
+                }
+            } catch (Exception ex) {
+                Notification.show("Error al reprogramar la cita: " + ex.getMessage());
+            }
         });
-        guardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        guardar.getElement().getThemeList().add("primary");
 
-        Button cerrar = new Button("Cerrar", e -> dlg.close());
+        Button cancelar = new Button("Cancelar", e -> dialog.close());
+        cancelar.getElement().getThemeList().add("tertiary");
 
-        dlg.add(tf);
-        dlg.getFooter().add(new HorizontalLayout(guardar, cerrar));
-        dlg.open();
+        HorizontalLayout botones = new HorizontalLayout(guardar, cancelar);
+        dialog.add(nuevaFechaPicker, botones);
+        dialog.open();
     }
 
-    private void abrirReprogramarDialog(Dialog parent, Sesion s, LocalDate fechaDia) {
-        Dialog dlg = new Dialog();
-        dlg.setHeaderTitle("Reprogramar sesión");
-
-        DatePicker dp = new DatePicker("Fecha");
-        dp.setValue(s.getFecha().toLocalDate());
-
-        TimePicker tp = new TimePicker("Hora");
-        tp.setStep(Duration.ofMinutes(30));
-        tp.setValue(s.getFecha().toLocalTime());
-
-        Button guardar = new Button("Guardar", e -> {
-            if (dp.getValue() == null || tp.getValue() == null) {
-                Notification.show("Selecciona fecha y hora.");
-                return;
-            }
-            LocalDateTime nuevoInicio = dp.getValue().atTime(tp.getValue());
-            if (nuevoInicio.isBefore(LocalDateTime.now())) {
-                Notification.show("No puedes reprogramar al pasado.");
-                return;
-            }
-            var ok = sesionService.reprogramarSesion(s.getId(), nuevoInicio, DURACION_SESION);
-            if (ok.isEmpty()) {
-                Notification.show("No disponible por conflicto con otra cita (ventana de desplazamiento).");
-                return;
-            }
-            Notification.show("Sesión reprogramada.");
-            recargarSesionesMes();
-            repintarCalendario();
-            dlg.close();
-            parent.close();
-            abrirDetalleDia(nuevoInicio.toLocalDate());
-        });
-
-        Button cancelar = new Button("Cerrar", e -> dlg.close());
-
-        HorizontalLayout acciones = new HorizontalLayout(guardar, cancelar);
-        acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        dlg.add(new HorizontalLayout(dp, tp));
-        dlg.getFooter().add(acciones);
-        dlg.open();
+    private void actualizarCitas() {
+        LocalDate hoy = LocalDate.now();
+        List<Sesion> citas = sesionService.obtenerSesionesPorPacienteYDia(paciente.getId(), hoy);
+        citasCombo.setItems(citas.stream()
+                .filter(s -> s.getEstado() == Sesion.EstadoSesion.PROGRAMADA || s.getEstado() == Sesion.EstadoSesion.CONFIRMADA)
+                .sorted(Comparator.comparing(Sesion::getFecha))
+                .collect(Collectors.toList()));
     }
 
-    private void abrirReprogramarDialogInline(Sesion s) {
-        Dialog dlg = new Dialog();
-        dlg.setHeaderTitle("Reprogramar sesión");
-
-        DatePicker dp = new DatePicker("Fecha");
-        dp.setValue(s.getFecha().toLocalDate());
-
-        TimePicker tp = new TimePicker("Hora");
-        tp.setStep(Duration.ofMinutes(30));
-        tp.setValue(s.getFecha().toLocalTime());
-
-        Button guardar = new Button("Guardar", e -> {
-            if (dp.getValue() == null || tp.getValue() == null) {
-                Notification.show("Selecciona fecha y hora.");
-                return;
-            }
-            LocalDateTime nuevoInicio = dp.getValue().atTime(tp.getValue());
-            if (nuevoInicio.isBefore(LocalDateTime.now())) {
-                Notification.show("No puedes reprogramar al pasado.");
-                return;
-            }
-            var ok = sesionService.reprogramarSesion(s.getId(), nuevoInicio, DURACION_SESION);
-            if (ok.isEmpty()) {
-                Notification.show("No disponible por conflicto con otra cita (ventana de desplazamiento).");
-                return;
-            }
-            Notification.show("Sesión reprogramada.");
-            recargarSesionesMes();
-            repintarCalendario();
-            refrescarListaSesiones();
-            dlg.close();
-        });
-
-        Button cancelar = new Button("Cerrar", e -> dlg.close());
-
-        HorizontalLayout acciones = new HorizontalLayout(guardar, cancelar);
-        acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        dlg.add(new HorizontalLayout(dp, tp));
-        dlg.getFooter().add(acciones);
-        dlg.open();
-    }
-
-    private String capitalizarInicialMes(String texto) {
-        if (texto == null || texto.isBlank()) return texto;
-        return texto.substring(0, 1).toUpperCase(new Locale("es")) + texto.substring(1);
+    private void limpiarFormulario() {
+        fechaHoraPicker.clear();
+        motivoField.clear();
+        lugarField.clear();
     }
 }

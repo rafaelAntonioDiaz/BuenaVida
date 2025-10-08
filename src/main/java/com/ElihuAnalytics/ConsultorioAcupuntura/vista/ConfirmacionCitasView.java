@@ -63,7 +63,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
         setSpacing(true);
         addClassName("medico-citas-view");
 
-        H2 titulo = new H2("Confirmación de citas");
+        H2 titulo = new H2("Gestión de citas");
         add(titulo);
 
         cbPaciente = new ComboBox<>("Paciente (opcional)");
@@ -109,14 +109,14 @@ public class ConfirmacionCitasView extends VerticalLayout {
 
     private void abrirRango(LocalDate ini, LocalDate fin) {
         Dialog dlg = new Dialog();
-        dlg.setHeaderTitle("Citas pendientes · " + FECHA.format(ini) + " - " + FECHA.format(fin));
+        dlg.setHeaderTitle("Citas no realizadas · " + FECHA.format(ini) + " - " + FECHA.format(fin));
 
         Div cont = new Div();
         cont.addClassName("lista-sesiones");
 
-        List<Sesion> sesiones = buscarPendientes(ini, fin);
+        List<Sesion> sesiones = buscarPendientesEntre(ini, fin);
         if (sesiones.isEmpty()) {
-            cont.add(new Paragraph("No hay citas pendientes en el rango."));
+            cont.add(new Paragraph("No hay citas no realizadas en el rango."));
         } else {
             sesiones.forEach(s -> cont.add(itemSesion(s)));
         }
@@ -129,16 +129,16 @@ public class ConfirmacionCitasView extends VerticalLayout {
     private void recargar() {
         lista.removeAll();
         LocalDate fecha = Optional.ofNullable(dpFecha.getValue()).orElse(LocalDate.now());
-        List<Sesion> deHoy = buscarPendientes(fecha, fecha);
+        List<Sesion> deHoy = buscarPendientesEntre(fecha, fecha);
         if (deHoy.isEmpty()) {
-            lista.add(new Paragraph("No hay citas pendientes para hoy" +
+            lista.add(new Paragraph("No hay citas no realizadas para hoy" +
                     (cbPaciente.getValue() != null ? " de este paciente." : ".")));
             return;
         }
         deHoy.forEach(s -> lista.add(itemSesion(s)));
     }
 
-    private List<Sesion> buscarPendientes(LocalDate ini, LocalDate fin) {
+    private List<Sesion> buscarPendientesEntre(LocalDate ini, LocalDate fin) {
         List<Paciente> pacientes = cbPaciente.getValue() != null
                 ? List.of(cbPaciente.getValue())
                 : pacienteService.listarTodos();
@@ -153,7 +153,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
                     LocalDate d = s.getFecha().toLocalDate();
                     return !d.isBefore(ini) && !d.isAfter(fin);
                 })
-                .filter(s -> s.getEstado() == Sesion.EstadoSesion.PROGRAMADA)
+                .filter(s -> s.getEstado() == Sesion.EstadoSesion.PROGRAMADA || s.getEstado() == Sesion.EstadoSesion.CONFIRMADA)
                 .sorted(Comparator.comparing(Sesion::getFecha))
                 .collect(Collectors.toList());
     }
@@ -162,44 +162,45 @@ public class ConfirmacionCitasView extends VerticalLayout {
         Div row = new Div();
         row.addClassName("item-sesion");
 
-        // Muestra info de la sesión
+        String estado = s.getEstado() == Sesion.EstadoSesion.PROGRAMADA ? " (Por confirmar)" : " (Confirmada)";
         String cab = FECHA.format(s.getFecha()) + " " + HORA.format(s.getFecha());
         long mins = Math.max(0, Duration.between(LocalDateTime.now(), s.getFecha()).toMinutes());
         String lugar = Optional.ofNullable(s.getLugar()).filter(v -> !v.isBlank()).map(v -> " · Lugar: " + v).orElse("");
-        Paragraph info = new Paragraph(cab + " · " + s.getMotivo() + lugar + " · faltan " + mins + " min");
+        Paragraph info = new Paragraph(cab + " · " + s.getMotivo() + lugar + " · faltan " + mins + " min" + estado);
         info.addClassName("item-sesion__info");
+        if (s.getEstado() == Sesion.EstadoSesion.CONFIRMADA) {
+            info.addClassName("item-sesion__confirmada");
+        }
 
-        // Botón para confirmar
         Button confirmar = new Button("Confirmar", e -> {
             if (!puedeConfirmarseHoyConAnticipo(s)) {
                 Notification.show("La confirmación debe realizarse el mismo día y al menos 2 horas antes de la sesión.");
                 return;
             }
             try {
-                sesionService.confirmarSesion(s.getId());
+                sesionService.confirmarSesion(s.getId()).orElseThrow(() -> new RuntimeException("No se pudo confirmar la sesión"));
                 String mensaje = "Tu cita ha sido confirmada para el " + FECHA.format(s.getFecha()) + " a las " + HORA.format(s.getFecha());
                 notificacionService.enviarConfirmacionPaciente(s, mensaje);
-                Notification.show("Sesión confirmada y notificación enviada al paciente.");
+                Notification.show("Sesión confirmada y notificaciones enviadas.");
                 UI.getCurrent().getPage().reload();
             } catch (Exception ex) {
                 Notification.show("No se pudo confirmar la sesión: " + ex.getMessage());
             }
         });
         confirmar.getElement().getThemeList().add("primary");
-        confirmar.setEnabled(puedeConfirmarseHoyConAnticipo(s));
+        confirmar.setEnabled(s.getEstado() == Sesion.EstadoSesion.PROGRAMADA && puedeConfirmarseHoyConAnticipo(s));
 
-        // Botón para enviar recordatorio
         Button recordatorio = new Button("Recordatorio", e -> {
             try {
                 notificacionService.enviarRecordatorioPaciente(s);
                 notificacionService.enviarRecordatorioMedico(s);
                 Notification.show("Recordatorio enviado.");
             } catch (Exception ex) {
-                Notification.show("No se pudo enviar el recordatorio.");
+                Notification.show("No se pudo enviar el recordatorio: " + ex.getMessage());
             }
         });
+        recordatorio.setEnabled(s.getEstado() == Sesion.EstadoSesion.CONFIRMADA);
 
-        // Botón para cancelar la sesión
         Button cancelar = new Button("Cancelar", e -> {
             Dialog cd = new Dialog();
             cd.setHeaderTitle("Cancelar sesión");
@@ -211,7 +212,6 @@ public class ConfirmacionCitasView extends VerticalLayout {
                 UI.getCurrent().getPage().reload();
             });
             Button no = new Button("No", ev -> cd.close());
-
             HorizontalLayout acciones = new HorizontalLayout(ok, no);
             acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
             cd.getFooter().add(acciones);

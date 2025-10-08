@@ -17,6 +17,11 @@
   background: var(--lumo-contrast-5pct);
 }
 
+.item-sesion__confirmada {
+    background-color: #e6f3e6; /* Fondo verde claro para citas confirmadas */
+    border-left: 4px solid #28a745; /* Borde verde */
+}
+
 .item-sesion__info {
   margin: 0 0 var(--lumo-space-s) 0;
   white-space: pre-wrap;
