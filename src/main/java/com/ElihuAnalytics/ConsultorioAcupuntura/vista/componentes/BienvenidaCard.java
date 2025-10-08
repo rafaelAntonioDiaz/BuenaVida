@@ -21,7 +21,7 @@ public class BienvenidaCard extends Div {
                 .set("box-shadow", "var(--lumo-box-shadow-s)");
 
         // Título: ¡Bienvenido, <Nombre>!
-        H3 titulo = new H3("¡Bienvenido, " + paciente.getNombres() + "!");
+        H3 titulo = new H3("¡Que gusto, " + paciente.getNombres() + "!");
         // Texto descriptivo: igual al de la vista original
         Paragraph texto = new Paragraph(
                 "Aquí puedes programar sesiones, reportar tu estado de salud y gestionar tus antecedentes relevantes."

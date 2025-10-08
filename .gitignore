@@ -49,4 +49,3 @@ src/main/bundles/
 # Permitir script gradlew para deployment
 !gradlew
 !gradlew.bat
-build/
