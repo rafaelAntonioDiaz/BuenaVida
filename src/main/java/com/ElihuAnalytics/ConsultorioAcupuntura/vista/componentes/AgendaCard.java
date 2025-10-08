@@ -2,7 +2,6 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Paciente;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
-import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionServiceImpl;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util.FestivosColombia;
@@ -49,7 +48,7 @@ public class AgendaCard extends Div {
     private HorizontalLayout navMes;
     private Span etiquetaMes;
 
-    public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionServiceImpl notificacionService) {
+    public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionService notificacionService) {
         this.paciente = paciente;
         this.sesionService = sesionService;
         this.notificacionService = notificacionService;

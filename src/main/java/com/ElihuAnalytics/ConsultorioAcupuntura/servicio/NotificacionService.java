@@ -6,4 +6,5 @@ public interface NotificacionService {
     void enviarRecordatorioPaciente(Sesion sesion);
     void enviarRecordatorioMedico(Sesion sesion);
     void enviarConfirmacionPaciente(Sesion sesion, String mensaje);
+    void enviarNotificacionProgramacionMedico(Sesion sesion); // Añadido
 }

@@ -38,17 +38,18 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     @Override
     public void enviarConfirmacionPaciente(Sesion sesion, String mensaje) {
+        logger.info("Enviando confirmación al paciente para sesión ID: {}", sesion.getId());
         // Notificación nativa
         nativaService.enviarNotificacionNativaCita(sesion);
 
         // Correo al paciente
         String emailPaciente = sesion.getPaciente().getUsername();
-        String subject = "Confirmación de cita - Consultorio Acupuntura";
-        sendEmail(emailPaciente, subject, mensaje);
+        sendEmail(emailPaciente, "Confirmación de cita - Consultorio Acupuntura", mensaje);
     }
 
     @Override
     public void enviarRecordatorioPaciente(Sesion sesion) {
+        logger.info("Enviando recordatorio al paciente para sesión ID: {}", sesion.getId());
         // Notificación nativa
         nativaService.enviarNotificacionNativaCita(sesion);
 
@@ -62,6 +63,7 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     @Override
     public void enviarRecordatorioMedico(Sesion sesion) {
+        logger.info("Enviando recordatorio al médico para sesión ID: {}", sesion.getId());
         // Notificación nativa
         nativaService.enviarNotificacionNativaCita(sesion);
 
@@ -74,10 +76,9 @@ public class NotificacionServiceImpl implements NotificacionService {
         sendEmail(MEDICO_EMAIL, "Recordatorio de cita - Consultorio Acupuntura", mensaje);
     }
 
-    /**
-     * Envía notificación nativa y correo al médico cuando se programa una cita.
-     */
+    @Override
     public void enviarNotificacionProgramacionMedico(Sesion sesion) {
+        logger.info("Enviando notificación de programación al médico para sesión ID: {}", sesion.getId());
         // Notificación nativa
         nativaService.enviarNotificacionNativaCita(sesion);
 
