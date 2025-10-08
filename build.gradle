@@ -22,13 +22,19 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url 'https://maven.vaadin.com/vaadin-addons' }
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+    maven {
+        url = 'https://maven.vaadin.com/vaadin-addons'
+    }
+    maven {
+        url = 'https://jitpack.io'
+    }
+    maven {
+        url = 'https://maven.vaadin.com/vaadin-prereleases'
+    }
 }
 
 ext {
-    set('vaadinVersion', "24.8.4")
+    vaadinVersion = '24.8.4'
 }
 
 dependencies {
@@ -37,10 +43,9 @@ dependencies {
     implementation 'org.springframework.security:spring-security-crypto'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation enforcedPlatform("com.vaadin:vaadin-bom:24.8.4")
+    implementation enforcedPlatform('com.vaadin:vaadin-bom:24.8.4')
     implementation 'com.vaadin:vaadin-spring-boot-starter:24.8.4'
-    implementation 'com.sendgrid:sendgrid-java:4.10.2' // Biblioteca para SendGrid API (HTTP)
-    // Excluir Neo4j explícitamente
+    implementation 'com.sendgrid:sendgrid-java:4.10.2'
     implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
         exclude group: 'org.neo4j'
     }
@@ -50,19 +55,22 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    runtimeOnly 'com.mysql:mysql-connector-j:8.0.33' // Versión específica para MySQL 8
+    runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
     testImplementation 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.2' // Añadido explícitamente
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2' // Añadido explícitamente
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.2' // Actualizado a versión reciente
 }
 
-// Configuración Vaadin
 vaadin {
     productionMode = true
 }
 
-// Deshabilitar JAR plain
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
 tasks.named('jar') {
     enabled = false
 }

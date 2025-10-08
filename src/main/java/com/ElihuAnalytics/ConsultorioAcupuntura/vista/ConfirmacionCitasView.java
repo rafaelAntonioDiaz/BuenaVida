@@ -8,6 +8,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -37,7 +38,7 @@ import java.util.stream.Stream;
 @Route(value = "medico/citas", layout = LayoutPrincipal.class)
 @PageTitle("Confirmación de citas")
 @RolesAllowed({"ADMIN", "MEDICO"})
-@CssImport("styles/medico-citas.css")
+@CssImport("./styles/medico-citas.css") // Corregido: añadido prefijo ./
 public class ConfirmacionCitasView extends VerticalLayout {
 
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -187,7 +188,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
                 Notification.show("No se pudo confirmar la sesión: " + ex.getMessage());
             }
         });
-        confirmar.getElement().getThemeList().add("primary");
+        confirmar.addThemeVariants(ButtonVariant.LUMO_PRIMARY); // Corregido: usar addThemeVariants
         confirmar.setEnabled(s.getEstado() == Sesion.EstadoSesion.PROGRAMADA && puedeConfirmarseHoyConAnticipo(s));
 
         Button recordatorio = new Button("Recordatorio", e -> {
@@ -199,6 +200,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
                 Notification.show("No se pudo enviar el recordatorio: " + ex.getMessage());
             }
         });
+        recordatorio.addThemeVariants(ButtonVariant.LUMO_PRIMARY); // Corregido: usar addThemeVariants
         recordatorio.setEnabled(s.getEstado() == Sesion.EstadoSesion.CONFIRMADA);
 
         Button cancelar = new Button("Cancelar", e -> {
@@ -211,13 +213,15 @@ public class ConfirmacionCitasView extends VerticalLayout {
                 Notification.show("Sesión cancelada.");
                 UI.getCurrent().getPage().reload();
             });
+            ok.addThemeVariants(ButtonVariant.LUMO_PRIMARY); // Corregido: usar addThemeVariants
             Button no = new Button("No", ev -> cd.close());
+            no.addThemeVariants(ButtonVariant.LUMO_TERTIARY); // Corregido: usar addThemeVariants
             HorizontalLayout acciones = new HorizontalLayout(ok, no);
             acciones.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
             cd.getFooter().add(acciones);
             cd.open();
         });
-        cancelar.getElement().getThemeList().add("error");
+        cancelar.addThemeVariants(ButtonVariant.LUMO_ERROR); // Corregido: usar addThemeVariants
 
         HorizontalLayout acciones = new HorizontalLayout(confirmar, recordatorio, cancelar);
         acciones.getStyle().set("flex-wrap", "wrap");

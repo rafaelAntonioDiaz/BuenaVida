@@ -17,7 +17,7 @@ import java.util.Optional;
 @Route(value = "medico", layout = LayoutPrincipal.class)
 @PageTitle("Médico")
 @RolesAllowed({"ADMINISTRADOR", "MEDICO"})
-@CssImport("styles/medico-admin.css")
+@CssImport("./styles/medico-admin.css")
 public class MedicoAdministradorView extends VerticalLayout {
 
     private final AutenticacionServicio auth;

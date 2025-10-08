@@ -34,7 +34,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.tratamiento.Do
 @Route(value = "medico/tratamiento", layout = LayoutPrincipal.class)
 @PageTitle("Determinación del tratamiento")
 @RolesAllowed({"ADMINISTRADOR", "MEDICO"})
-@CssImport("styles/medico-tratamiento.css")
+@CssImport("./styles/medico-tratamiento.css")
 public class DeterminacionTratamientoView extends VerticalLayout {
 
     private final PacienteService pacienteService;
