@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 /**
  * Muestra foto (rutaFotoPerfil) y datos básicos del paciente.
- * Normaliza la ruta a /pacientes-uploads/... según tu WebStaticResourcesConfig.
+ * Normaliza la ruta a /pacientes-Uploads/... para recursos estáticos en local y Railway Volumes.
  */
 public class PacienteHeaderCard extends Div {
 
@@ -45,11 +45,23 @@ public class PacienteHeaderCard extends Div {
     }
 
     private String normalizarRutaFoto(String ruta) {
+        // Normalizar barras: \ -> /
         String r = ruta.replace("\\", "/");
-        if (r.startsWith("http://") || r.startsWith("https://")) return r;
-        if (r.contains("pacientes-uploads/")) return r.startsWith("/") ? r : "/" + r;
+
+        // Si ya es una URL completa (http:// o https://), devolverla
+        if (r.startsWith("http://") || r.startsWith("https://")) {
+            return r;
+        }
+
+        // Extraer el nombre del archivo (última parte de la ruta)
         int idx = r.lastIndexOf('/');
-        String name = (idx >= 0 ? r.substring(idx + 1) : r);
-        return name.isBlank() ? null : "/pacientes-uploads/" + name;
+        String fileName = (idx >= 0 ? r.substring(idx + 1) : r);
+        if (fileName.isBlank()) {
+            return null;
+        }
+
+        // Devolver ruta relativa para recursos estáticos (/pacientes-Uploads/nombreArchivo)
+        // Compatible con local (./pacientes-Uploads/) y Railway (/volumes/uploads/pacientes-Uploads/)
+        return "/pacientes-Uploads/" + fileName;
     }
 }

@@ -44,8 +44,7 @@ pacientes-uploads/
 frontend/generated/
 src/main/frontend/generated/
 # Bundles de frontend
-src/main/bundles/
-.bundle
+*.bundle
 # Permitir script gradlew para deployment
 !gradlew
 !gradlew.bat

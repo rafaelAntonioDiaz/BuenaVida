@@ -24,7 +24,7 @@ public class FileStorageService {
     private final Path rootLocation;
 
     public FileStorageService
-            (@Value("${app.upload.dir:./pacientes-uploads/}") String uploadDir) {
+            (@Value("${app.upload.dir}") String uploadDir) {
         this.rootLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
     }
 
