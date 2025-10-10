@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Implementación de NotificacionService para enviar notificaciones nativas y correos.
+ * Servicio para enviar notificaciones nativas y correos electrónicos.
  */
 @Service
 public class NotificacionServiceImpl implements NotificacionService {
@@ -36,63 +36,87 @@ public class NotificacionServiceImpl implements NotificacionService {
         this.nativaService = nativaService;
     }
 
+    /**
+     * Envía una confirmación al paciente (notificación nativa y correo).
+     * @param sesion Sesión confirmada
+     * @param mensaje Mensaje personalizado
+     */
     @Override
     public void enviarConfirmacionPaciente(Sesion sesion, String mensaje) {
         logger.info("Enviando confirmación al paciente para sesión ID: {}", sesion.getId());
-        // Notificación nativa
-        nativaService.enviarNotificacionNativaCita(sesion);
-
-        // Correo al paciente
-        String emailPaciente = sesion.getPaciente().getUsername();
-        sendEmail(emailPaciente, "Confirmación de cita - Consultorio Acupuntura", mensaje);
-    }
-
-    @Override
-    public void enviarRecordatorioPaciente(Sesion sesion) {
-        logger.info("Enviando recordatorio al paciente para sesión ID: {}", sesion.getId());
-        // Notificación nativa
-        nativaService.enviarNotificacionNativaCita(sesion);
-
-        // Correo al paciente
-        String mensaje = "Recordatorio: Tienes una cita programada para el " +
-                sesion.getFecha().format(FORMATTER) +
-                ". Motivo: " + sesion.getMotivo() +
-                ". Lugar: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
-        sendEmail(sesion.getPaciente().getUsername(), "Recordatorio de cita - Consultorio Acupuntura", mensaje);
-    }
-
-    @Override
-    public void enviarRecordatorioMedico(Sesion sesion) {
-        logger.info("Enviando recordatorio al médico para sesión ID: {}", sesion.getId());
-        // Notificación nativa
-        nativaService.enviarNotificacionNativaCita(sesion);
-
-        // Correo al médico
-        String mensaje = "Recordatorio: Cita con " +
-                sesion.getPaciente().getNombres() + " " + sesion.getPaciente().getApellidos() +
-                " el " + sesion.getFecha().format(FORMATTER) +
-                ". Motivo: " + sesion.getMotivo() +
-                ". Lugar: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
-        sendEmail(MEDICO_EMAIL, "Recordatorio de cita - Consultorio Acupuntura", mensaje);
-    }
-
-    @Override
-    public void enviarNotificacionProgramacionMedico(Sesion sesion) {
-        logger.info("Enviando notificación de programación al médico para sesión ID: {}", sesion.getId());
-        // Notificación nativa
-        nativaService.enviarNotificacionNativaCita(sesion);
-
-        // Correo al médico
-        String mensaje = "Nueva cita programada por " +
-                sesion.getPaciente().getNombres() + " " + sesion.getPaciente().getApellidos() +
-                " para el " + sesion.getFecha().format(FORMATTER) +
-                ". Motivo: " + sesion.getMotivo() +
-                ". Lugar: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
-        sendEmail(MEDICO_EMAIL, "Nueva cita programada - Consultorio Acupuntura", mensaje);
+        try {
+            nativaService.enviarNotificacionNativaCita(sesion);
+            String emailPaciente = sesion.getPaciente().getUsername();
+            sendEmail(emailPaciente, "Confirmación de cita - Consultorio Acupuntura", mensaje);
+        } catch (Exception e) {
+            logger.error("Error al enviar confirmación al paciente para sesión ID {}: {}", sesion.getId(), e.getMessage());
+        }
     }
 
     /**
-     * Envía un correo usando SendGrid API.
+     * Envía un recordatorio al paciente.
+     * @param sesion Sesión para la que se envía el recordatorio
+     */
+    @Override
+    public void enviarRecordatorioPaciente(Sesion sesion) {
+        logger.info("Enviando recordatorio al paciente para sesión ID: {}", sesion.getId());
+        try {
+            nativaService.enviarNotificacionNativaCita(sesion);
+            String mensaje = "Recordatorio: Tienes una cita programada para el " +
+                    sesion.getFecha().format(FORMATTER) +
+                    ". Motivo: " + sesion.getMotivo() +
+                    ". Lugar: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
+            sendEmail(sesion.getPaciente().getUsername(), "Recordatorio de cita - Consultorio Acupuntura", mensaje);
+        } catch (Exception e) {
+            logger.error("Error al enviar recordatorio al paciente para sesión ID {}: {}", sesion.getId(), e.getMessage());
+        }
+    }
+
+    /**
+     * Envía un recordatorio al médico.
+     * @param sesion Sesión para la que se envía el recordatorio
+     */
+    @Override
+    public void enviarRecordatorioMedico(Sesion sesion) {
+        logger.info("Enviando recordatorio al médico para sesión ID: {}", sesion.getId());
+        try {
+            nativaService.enviarNotificacionNativaCita(sesion);
+            String mensaje = "Recordatorio: Cita con " +
+                    sesion.getPaciente().getNombres() + " " + sesion.getPaciente().getApellidos() +
+                    " el " + sesion.getFecha().format(FORMATTER) +
+                    ". Motivo: " + sesion.getMotivo() +
+                    ". Lugar: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
+            sendEmail(MEDICO_EMAIL, "Recordatorio de cita - Consultorio Acupuntura", mensaje);
+        } catch (Exception e) {
+            logger.error("Error al enviar recordatorio al médico para sesión ID {}: {}", sesion.getId(), e.getMessage());
+        }
+    }
+
+    /**
+     * Envía una notificación al médico sobre una nueva cita programada.
+     * @param sesion Sesión programada
+     */
+    @Override
+    public void enviarNotificacionProgramacionMedico(Sesion sesion) {
+        logger.info("Enviando notificación de programación al médico para sesión ID: {}", sesion.getId());
+        try {
+            nativaService.enviarNotificacionNativaCita(sesion);
+            String mensaje = "Nueva cita programada por " +
+                    sesion.getPaciente().getNombres() + " " + sesion.getPaciente().getApellidos() +
+                    " para el " + sesion.getFecha().format(FORMATTER) +
+                    ". Motivo: " + sesion.getMotivo() +
+                    ". Lugar: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
+            sendEmail(MEDICO_EMAIL, "Nueva cita programada - Consultorio Acupuntura", mensaje);
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación al médico para sesión ID {}: {}", sesion.getId(), e.getMessage());
+        }
+    }
+
+    /**
+     * Envía un correo usando la API de SendGrid.
+     * @param to Dirección de correo del destinatario
+     * @param subject Asunto del correo
+     * @param text Contenido del correo
      */
     private void sendEmail(String to, String subject, String text) {
         try {
@@ -113,11 +137,9 @@ public class NotificacionServiceImpl implements NotificacionService {
             } else {
                 logger.error("❌ Error al enviar correo a {}: Status {}, Body: {}",
                         to, response.getStatusCode(), response.getBody());
-                throw new RuntimeException("No se pudo enviar el correo");
             }
         } catch (Exception e) {
             logger.error("❌ Error al enviar correo a {}: {}", to, e.getMessage(), e);
-            throw new RuntimeException("No se pudo enviar el correo", e);
         }
     }
 }

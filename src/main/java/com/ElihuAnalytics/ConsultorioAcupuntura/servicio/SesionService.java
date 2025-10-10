@@ -1,7 +1,6 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.servicio;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,7 +15,8 @@ public interface SesionService {
     void cancelarSesion(Long sesionId);
     void guardarSesion(Sesion sesion);
     List<Sesion> buscarPendientesAntes(LocalDateTime fecha);
-    boolean estaDisponible(LocalDateTime fecha, Duration duracion); // Nuevo método
-    List<Sesion> obtenerSesionesPorPacienteYDia(Long pacienteId, LocalDate dia); // Nuevo método
-    Optional<Sesion> reprogramarSesion(Long sesionId, LocalDateTime nuevaFecha, Duration duracion); // Nuevo método
+    boolean estaDisponible(LocalDateTime fecha, Duration duracion);
+    boolean estaDisponible(LocalDateTime fecha, Duration duracion, Long excludeId);
+    List<Sesion> obtenerSesionesPorPacienteYDia(Long pacienteId, LocalDate dia);
+    Optional<Sesion> reprogramarSesion(Long sesionId, LocalDateTime nuevaFecha, Duration duracion);
 }

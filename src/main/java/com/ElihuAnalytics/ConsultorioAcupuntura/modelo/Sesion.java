@@ -3,10 +3,15 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.modelo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Entidad que representa una sesión o cita en el consultorio.
+ */
 @Entity
+@Table(name = "sesion")
 public class Sesion {
 
     @Id
@@ -15,26 +20,27 @@ public class Sesion {
 
     @NotNull
     @Column(nullable = false)
-    private LocalDateTime fecha;
+    private LocalDateTime fecha; // Fecha y hora de la cita
 
     @NotBlank
     @Column(nullable = false, length = 500)
-    private String motivo;
+    private String motivo; // Motivo de la cita
 
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private EstadoSesion estado;
+    private EstadoSesion estado; // Estado de la cita (PROGRAMADA, CONFIRMADA, etc.)
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "paciente", nullable = false)
-    private Paciente paciente;
+    @JoinColumn(name = "paciente_id", nullable = false)
+    private Paciente paciente; // Paciente asociado a la cita
 
     @Column(length = 255)
-    private String lugar;
+    private String lugar; // Lugar opcional de la cita
 
+    @NotNull
     @Column(nullable = false)
-    private boolean recordatorioEnviado = false; // Nuevo campo
+    private Duration duracion = Duration.ofHours(1); // Duración de la cita (1 hora por defecto)
 
     public Sesion() {
     }
@@ -44,7 +50,7 @@ public class Sesion {
         this.motivo = motivo;
         this.estado = estado;
         this.paciente = paciente;
-        this.recordatorioEnviado = false;
+        this.duracion = Duration.ofHours(1);
     }
 
     // Getters y setters
@@ -96,12 +102,12 @@ public class Sesion {
         this.lugar = lugar;
     }
 
-    public boolean isRecordatorioEnviado() {
-        return recordatorioEnviado;
+    public Duration getDuracion() {
+        return duracion;
     }
 
-    public void setRecordatorioEnviado(boolean recordatorioEnviado) {
-        this.recordatorioEnviado = recordatorioEnviado;
+    public void setDuracion(Duration duracion) {
+        this.duracion = duracion;
     }
 
     @Override
@@ -124,7 +130,7 @@ public class Sesion {
                 ", fecha=" + fecha +
                 ", motivo='" + motivo + '\'' +
                 ", estado=" + estado +
-                ", recordatorioEnviado=" + recordatorioEnviado +
+                ", duracion=" + duracion +
                 '}';
     }
 

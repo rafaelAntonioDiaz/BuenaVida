@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Scheduler para enviar recordatorios automáticos 2 horas antes de la cita.
+ * Scheduler para enviar recordatorios automáticos 2 horas antes de las citas.
  */
 @Component
 public class RecordatorioCitasScheduler {
@@ -26,6 +26,9 @@ public class RecordatorioCitasScheduler {
         this.notificacionService = notificacionService;
     }
 
+    /**
+     * Ejecuta cada 10 minutos para buscar citas confirmadas en las próximas 2 horas y enviar recordatorios.
+     */
     @Scheduled(fixedRate = 600000) // Cada 10 minutos
     public void enviarRecordatorios() {
         LocalDateTime ahora = LocalDateTime.now();
@@ -39,12 +42,10 @@ public class RecordatorioCitasScheduler {
 
         int recordatoriosEnviados = 0;
         for (Sesion sesion : proximasSesiones) {
-            if (sesion.getEstado() == Sesion.EstadoSesion.CONFIRMADA && !sesion.isRecordatorioEnviado()) {
+            if (sesion.getEstado() == Sesion.EstadoSesion.CONFIRMADA) {
                 try {
                     notificacionService.enviarRecordatorioPaciente(sesion);
                     notificacionService.enviarRecordatorioMedico(sesion);
-                    sesion.setRecordatorioEnviado(true);
-                    sesionService.guardarSesion(sesion); // Actualizar en BD
                     recordatoriosEnviados++;
                     log.info("Recordatorios enviados para sesión ID: {}", sesion.getId());
                 } catch (Exception e) {

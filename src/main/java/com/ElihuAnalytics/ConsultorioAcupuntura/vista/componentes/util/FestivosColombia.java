@@ -1,4 +1,3 @@
-// java
 package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util;
 
 import java.time.DayOfWeek;
