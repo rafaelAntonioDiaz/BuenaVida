@@ -14,6 +14,7 @@ import java.util.Optional;
 
 /**
  * Componente principal para agendar y reprogramar citas.
+ * Contiene el calendario del mes, el formulario de agendamiento y la lista de citas programadas.
  */
 public class AgendaCard extends VerticalLayout {
 
@@ -25,7 +26,7 @@ public class AgendaCard extends VerticalLayout {
     private final PacienteRepository pacienteRepository;
     private final AgendaForm agendaForm;
     private final CalendarioMes calendarioMes;
-    private final CitasCombo citasCombo;
+    private final CitasLista citasLista;
 
     @Autowired
     public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionService notificacionService,
@@ -34,37 +35,45 @@ public class AgendaCard extends VerticalLayout {
         this.notificacionService = notificacionService;
         this.pacienteRepository = pacienteRepository;
 
+        // Validar que el paciente sea válido
         if (paciente == null || paciente.getId() == null) {
             log.error("Paciente inválido recibido: id={}, username={}",
                     paciente != null ? paciente.getId() : "null",
                     paciente != null ? paciente.getUsername() : "null");
             throw new IllegalStateException("Paciente inválido: ID nulo o paciente no proporcionado");
         }
+
+        // Verificar que el paciente existe en la base de datos
         Optional<Paciente> pacienteVerificado = pacienteRepository.findById(paciente.getId());
         if (!pacienteVerificado.isPresent()) {
             log.error("Paciente no encontrado en la base de datos: id={}, username={}",
                     paciente.getId(), paciente.getUsername());
             throw new IllegalStateException("Paciente no registrado en la base de datos");
         }
+
         this.paciente = pacienteVerificado.get();
-        log.info("Paciente inicializado en AgendaCard: id={}, username={}", this.paciente.getId(), this.paciente.getUsername());
+        log.info("Paciente inicializado en AgendaCard: id={}, username={}",
+                this.paciente.getId(), this.paciente.getUsername());
 
         setWidth("400px");
         setPadding(true);
         setSpacing(true);
 
+        // Título del componente
         H3 titulo = new H3("Agendar cita");
 
+        // Inicializar componentes
         agendaForm = new AgendaForm(paciente, sesionService, notificacionService, pacienteRepository);
         calendarioMes = new CalendarioMes(paciente.getId(), sesionService, agendaForm.getFechaHoraPicker());
-        citasCombo = new CitasCombo(paciente.getId(), sesionService, notificacionService);
+        citasLista = new CitasLista(paciente.getId(), sesionService, notificacionService);
 
-        // Registrar callback para actualizar calendario y citas tras agendamiento
+        // Registrar callback para actualizar el calendario y la lista de citas después de agendar
         agendaForm.onAgendarSuccess(() -> {
             calendarioMes.recargarSesionesMes();
-            citasCombo.actualizarCitas();
+            citasLista.actualizarCitas();
         });
 
-        add(titulo, calendarioMes, agendaForm, citasCombo);
+        // Agregar componentes en orden: título, calendario, formulario, lista de citas
+        add(titulo, calendarioMes, agendaForm, citasLista);
     }
 }
