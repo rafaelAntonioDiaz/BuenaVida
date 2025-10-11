@@ -1,7 +1,12 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.servicio;
 
+import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Paciente;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.SesionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,160 +24,182 @@ import java.util.Optional;
 @Service
 public class SesionServiceImpl implements SesionService {
 
-    private static final Duration DESPLAZAMIENTO = Duration.ofMinutes(30); // 30 minutos para desplazamiento después de la cita
+    private static final Logger log = LoggerFactory.getLogger(SesionServiceImpl.class);
+    private static final Duration DESPLAZAMIENTO = Duration.ofMinutes(30); // 30 minutos para desplazamiento
 
     private final SesionRepository sesionRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public SesionServiceImpl(SesionRepository sesionRepository) {
         this.sesionRepository = sesionRepository;
     }
 
-    /**
-     * Obtiene las sesiones de un paciente en un mes específico.
-     * @param pacienteId ID del paciente
-     * @param yearMonth Mes y año a consultar
-     * @return Lista de sesiones
-     */
     @Override
+    @Transactional(readOnly = true)
     public List<Sesion> obtenerSesionesPorPacienteYMes(Long pacienteId, YearMonth yearMonth) {
+        if (pacienteId == null) {
+            log.error("pacienteId es nulo en obtenerSesionesPorPacienteYMes");
+            throw new IllegalArgumentException("El ID del paciente no puede ser nulo");
+        }
         LocalDateTime inicio = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime fin = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+        log.debug("Buscando sesiones para pacienteId={} entre {} y {}", pacienteId, inicio, fin);
         return sesionRepository.findByPacienteIdAndFechaBetween(pacienteId, inicio, fin);
     }
 
-    /**
-     * Busca sesiones pendientes (PROGRAMADA o CONFIRMADA) en un rango de fechas.
-     * @param inicio Fecha de inicio
-     * @param fin Fecha de fin
-     * @return Lista de sesiones
-     */
     @Override
+    @Transactional(readOnly = true)
     public List<Sesion> buscarPendientesEntre(LocalDateTime inicio, LocalDateTime fin) {
-        return sesionRepository.findByFechaBetweenAndEstadoIn(inicio, fin, List.of(Sesion.EstadoSesion.PROGRAMADA, Sesion.EstadoSesion.CONFIRMADA));
+        log.debug("Buscando sesiones pendientes entre {} y {}", inicio, fin);
+        return sesionRepository.findByFechaBetweenAndEstadoIn(
+                inicio,
+                fin,
+                Arrays.asList(Sesion.EstadoSesion.PROGRAMADA, Sesion.EstadoSesion.CONFIRMADA)
+        );
     }
 
-    /**
-     * Confirma una sesión cambiando su estado a CONFIRMADA.
-     * @param sesionId ID de la sesión
-     * @return Sesión confirmada o vacía si no se puede confirmar
-     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Sesion> buscarPendientesAntes(LocalDateTime fecha) {
+        log.debug("Buscando sesiones pendientes antes de {}", fecha);
+        return sesionRepository.findByFechaBetweenAndEstadoIn(
+                LocalDateTime.of(2000, 1, 1, 0, 0),
+                fecha,
+                Arrays.asList(Sesion.EstadoSesion.PROGRAMADA, Sesion.EstadoSesion.CONFIRMADA)
+        );
+    }
+
     @Override
     @Transactional
     public Optional<Sesion> confirmarSesion(Long sesionId) {
-        Optional<Sesion> sesionOpt = sesionRepository.findById(sesionId);
-        if (sesionOpt.isPresent()) {
-            Sesion sesion = sesionOpt.get();
-            if (sesion.getEstado() == Sesion.EstadoSesion.PROGRAMADA) {
-                sesion.setEstado(Sesion.EstadoSesion.CONFIRMADA);
-                sesionRepository.save(sesion);
-                return Optional.of(sesion);
-            }
+        if (sesionId == null) {
+            log.error("sesionId es nulo en confirmarSesion");
+            throw new IllegalArgumentException("El ID de la sesión no puede ser nulo");
         }
-        return Optional.empty();
+        Optional<Sesion> sesionOpt = sesionRepository.findById(sesionId);
+        if (!sesionOpt.isPresent()) {
+            log.warn("Sesión no encontrada: id={}", sesionId);
+            return Optional.empty();
+        }
+        Sesion sesion = sesionOpt.get();
+        if (sesion.getEstado() != Sesion.EstadoSesion.PROGRAMADA) {
+            log.warn("Sesión no está en estado PROGRAMADA: id={}, estado={}", sesionId, sesion.getEstado());
+            throw new IllegalStateException("Solo se pueden confirmar sesiones programadas");
+        }
+        sesion.setEstado(Sesion.EstadoSesion.CONFIRMADA);
+        log.info("Confirmando sesión: id={}", sesionId);
+        return Optional.of(sesionRepository.save(sesion));
     }
 
-    /**
-     * Cancela una sesión cambiando su estado a CANCELADA.
-     * @param sesionId ID de la sesión
-     */
     @Override
     @Transactional
     public void cancelarSesion(Long sesionId) {
-        sesionRepository.findById(sesionId).ifPresent(sesion -> {
-            sesion.setEstado(Sesion.EstadoSesion.CANCELADA);
-            sesionRepository.save(sesion);
-        });
-    }
-
-    /**
-     * Guarda una sesión en la base de datos.
-     * @param sesion Sesión a guardar
-     */
-    @Override
-    @Transactional
-    public void guardarSesion(Sesion sesion) {
-        sesion.setDuracion(Duration.ofHours(1)); // Asegurar duración de 1 hora
+        if (sesionId == null) {
+            log.error("sesionId es nulo en cancelarSesion");
+            throw new IllegalArgumentException("El ID de la sesión no puede ser nulo");
+        }
+        Optional<Sesion> sesionOpt = sesionRepository.findById(sesionId);
+        if (!sesionOpt.isPresent()) {
+            log.warn("Sesión no encontrada: id={}", sesionId);
+            throw new IllegalStateException("Sesión no encontrada");
+        }
+        Sesion sesion = sesionOpt.get();
+        if (sesion.getEstado() == Sesion.EstadoSesion.CANCELADA) {
+            log.warn("Sesión ya cancelada: id={}", sesionId);
+            return;
+        }
+        sesion.setEstado(Sesion.EstadoSesion.CANCELADA);
+        log.info("Cancelando sesión: id={}", sesionId);
         sesionRepository.save(sesion);
     }
 
-    /**
-     * Busca sesiones pendientes antes de una fecha.
-     * @param fecha Fecha límite
-     * @return Lista de sesiones
-     */
     @Override
-    public List<Sesion> buscarPendientesAntes(LocalDateTime fecha) {
-        return sesionRepository.findByFechaBeforeAndEstadoIn(fecha, List.of(Sesion.EstadoSesion.PROGRAMADA, Sesion.EstadoSesion.CONFIRMADA));
+    @Transactional(readOnly = true)
+    public boolean estaDisponible(LocalDateTime inicio, Duration duracion) {
+        return estaDisponible(inicio, duracion, null);
     }
 
-    /**
-     * Verifica si un horario está disponible para una cita (sin considerar una sesión específica).
-     * @param fecha Fecha y hora de inicio
-     * @param duracion Duración de la cita
-     * @return true si el horario está disponible
-     */
     @Override
-    public boolean estaDisponible(LocalDateTime fecha, Duration duracion) {
-        return estaDisponible(fecha, duracion, null);
+    @Transactional(readOnly = true)
+    public boolean estaDisponible(LocalDateTime inicio, Duration duracion, Long excludeId) {
+        if (inicio == null || duracion == null) {
+            log.error("Parámetros inválidos en estaDisponible: inicio={}, duracion={}", inicio, duracion);
+            throw new IllegalArgumentException("Fecha y duración no pueden ser nulos");
+        }
+        LocalDateTime finCita = inicio.plus(duracion);
+        LocalDateTime finConDesplazamiento = finCita.plus(DESPLAZAMIENTO);
+        List<Sesion> sesiones = buscarPendientesEntre(inicio.minus(DESPLAZAMIENTO), finConDesplazamiento);
+        for (Sesion sesion : sesiones) {
+            if (excludeId != null && sesion.getId() != null && sesion.getId().equals(excludeId)) {
+                continue;
+            }
+            LocalDateTime sesionInicio = sesion.getFecha();
+            LocalDateTime sesionFin = sesionInicio.plus(sesion.getDuracion());
+            if (inicio.isBefore(sesionFin.plus(DESPLAZAMIENTO)) && finCita.plus(DESPLAZAMIENTO).isAfter(sesionInicio)) {
+                log.warn("Conflicto de horario detectado: inicio={}, fin={}, sesion_existente=[id={}, inicio={}, fin={}]",
+                        inicio, finCita, sesion.getId(), sesionInicio, sesionFin);
+                return false;
+            }
+        }
+        log.debug("Horario disponible: inicio={}, fin={}", inicio, finCita);
+        return true;
     }
 
-    /**
-     * Verifica si un horario está disponible, excluyendo una sesión específica (para reprogramaciones).
-     * @param fecha Fecha y hora de inicio
-     * @param duracion Duración de la cita
-     * @param excludeId ID de la sesión a excluir (puede ser null)
-     * @return true si el horario está disponible
-     */
     @Override
-    public boolean estaDisponible(LocalDateTime fecha, Duration duracion, Long excludeId) {
-        LocalDateTime finCita = fecha.plus(duracion);
-        LocalDateTime finDesplazamiento = finCita.plus(DESPLAZAMIENTO);
-        List<Sesion> sesiones = sesionRepository.findByFechaBetweenAndEstadoIn(
-                fecha, finDesplazamiento, List.of(Sesion.EstadoSesion.PROGRAMADA, Sesion.EstadoSesion.CONFIRMADA)
-        );
-        return sesiones.stream()
-                .filter(s -> excludeId == null || !s.getId().equals(excludeId))
-                .noneMatch(s -> s.getFecha().isBefore(finDesplazamiento) && s.getFecha().plus(s.getDuracion()).isAfter(fecha));
-    }
-
-    /**
-     * Obtiene las sesiones de un paciente en un día específico.
-     * @param pacienteId ID del paciente
-     * @param dia Día a consultar
-     * @return Lista de sesiones
-     */
-    @Override
+    @Transactional(readOnly = true)
     public List<Sesion> obtenerSesionesPorPacienteYDia(Long pacienteId, LocalDate dia) {
+        if (pacienteId == null || dia == null) {
+            log.error("Parámetros inválidos en obtenerSesionesPorPacienteYDia: pacienteId={}, dia={}", pacienteId, dia);
+            throw new IllegalArgumentException("Paciente ID y día no pueden ser nulos");
+        }
         LocalDateTime inicio = dia.atStartOfDay();
         LocalDateTime fin = dia.atTime(23, 59, 59);
+        log.debug("Buscando sesiones para pacienteId={} en día {}", pacienteId, dia);
         return sesionRepository.findByPacienteIdAndFechaBetween(pacienteId, inicio, fin);
     }
 
-    /**
-     * Reprograma una sesión a una nueva fecha si está disponible.
-     * @param sesionId ID de la sesión
-     * @param nuevaFecha Nueva fecha y hora
-     * @param duracion Duración de la cita
-     * @return Sesión reprogramada o vacía si no se puede reprogramar
-     */
+    @Override
+    @Transactional
+    public void guardarSesion(Sesion sesion) {
+        if (sesion == null || sesion.getPaciente() == null || sesion.getPaciente().getId() == null) {
+            log.error("Sesión inválida: sesion={}, paciente={}", sesion, sesion != null ? sesion.getPaciente() : null);
+            throw new IllegalArgumentException("Sesión o paciente inválido");
+        }
+        Paciente paciente = sesion.getPaciente();
+        log.info("Mergiendo paciente: id={}, username={}", paciente.getId(), paciente.getUsername());
+        Paciente pacientePersistido = entityManager.merge(paciente);
+        sesion.setPaciente(pacientePersistido);
+        log.info("Guardando sesión: id={}, paciente_id={}, fecha={}, motivo={}",
+                sesion.getId(), pacientePersistido.getId(), sesion.getFecha(), sesion.getMotivo());
+        sesionRepository.save(sesion);
+    }
+
     @Override
     @Transactional
     public Optional<Sesion> reprogramarSesion(Long sesionId, LocalDateTime nuevaFecha, Duration duracion) {
-        Optional<Sesion> sesionOpt = sesionRepository.findById(sesionId);
-        if (sesionOpt.isPresent()) {
-            Sesion sesion = sesionOpt.get();
-            if (sesion.getEstado() == Sesion.EstadoSesion.PROGRAMADA || sesion.getEstado() == Sesion.EstadoSesion.CONFIRMADA) {
-                if (estaDisponible(nuevaFecha, duracion, sesionId)) {
-                    sesion.setFecha(nuevaFecha);
-                    sesion.setEstado(Sesion.EstadoSesion.PROGRAMADA);
-                    sesion.setDuracion(duracion);
-                    sesionRepository.save(sesion);
-                    return Optional.of(sesion);
-                } else {
-                    throw new IllegalStateException("La nueva fecha no está disponible.");
-                }
-            }
+        if (sesionId == null || nuevaFecha == null || duracion == null) {
+            log.error("Parámetros inválidos en reprogramarSesion: sesionId={}, nuevaFecha={}, duracion={}",
+                    sesionId, nuevaFecha, duracion);
+            throw new IllegalArgumentException("Parámetros no pueden ser nulos");
         }
-        return Optional.empty();
+        Optional<Sesion> sesionOpt = sesionRepository.findById(sesionId);
+        if (!sesionOpt.isPresent()) {
+            log.warn("Sesión no encontrada: id={}", sesionId);
+            return Optional.empty();
+        }
+        Sesion sesion = sesionOpt.get();
+        if (!estaDisponible(nuevaFecha, duracion, sesionId)) {
+            log.warn("Horario no disponible para reprogramar: id={}, nuevaFecha={}", sesionId, nuevaFecha);
+            return Optional.empty();
+        }
+        Paciente pacientePersistido = entityManager.merge(sesion.getPaciente());
+        sesion.setPaciente(pacientePersistido);
+        sesion.setFecha(nuevaFecha);
+        sesion.setDuracion(duracion);
+        sesion.setEstado(Sesion.EstadoSesion.PROGRAMADA);
+        log.info("Reprogramando sesión: id={}, nuevaFecha={}, paciente_id={}",
+                sesionId, nuevaFecha, pacientePersistido.getId());
+        return Optional.of(sesionRepository.save(sesion));
     }
 }

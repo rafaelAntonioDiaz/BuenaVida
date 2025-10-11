@@ -2,10 +2,12 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Paciente;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
+import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.PacienteRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util.FestivosColombia;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -13,12 +15,17 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -35,14 +42,16 @@ import java.util.Locale;
  */
 public class AgendaCard extends VerticalLayout {
 
+    private static final Logger log = LoggerFactory.getLogger(AgendaCard.class);
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter FORMATO_MES = DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es"));
+    private static final DateTimeFormatter FORMATO_MES = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.of("es"));
     private static final Duration DURACION_CITA = Duration.ofHours(1);
 
     private final Paciente paciente;
     private final SesionService sesionService;
     private final NotificacionService notificacionService;
+    private final PacienteRepository pacienteRepository;
 
     private DateTimePicker fechaHoraPicker;
     private TextArea motivoField;
@@ -53,34 +62,39 @@ public class AgendaCard extends VerticalLayout {
     private Div calendarioContainer;
     private Span etiquetaMes;
 
-    /**
-     * Constructor del componente.
-     * @param paciente Paciente que agenda la cita
-     * @param sesionService Servicio para gestionar sesiones
-     * @param notificacionService Servicio para enviar notificaciones
-     */
-    public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionService notificacionService) {
-        this.paciente = paciente;
+    @Autowired
+    public AgendaCard(Paciente paciente, SesionService sesionService, NotificacionService notificacionService, PacienteRepository pacienteRepository) {
         this.sesionService = sesionService;
         this.notificacionService = notificacionService;
+        this.pacienteRepository = pacienteRepository;
+
+        if (paciente == null || paciente.getId() == null) {
+            log.error("Paciente inválido recibido: id={}, username={}",
+                    paciente != null ? paciente.getId() : "null",
+                    paciente != null ? paciente.getUsername() : "null");
+            throw new IllegalStateException("Paciente inválido: ID nulo o paciente no proporcionado");
+        }
+        Optional<Paciente> pacienteVerificado = pacienteRepository.findById(paciente.getId());
+        if (!pacienteVerificado.isPresent()) {
+            log.error("Paciente no encontrado en la base de datos: id={}, username={}",
+                    paciente.getId(), paciente.getUsername());
+            throw new IllegalStateException("Paciente no registrado en la base de datos");
+        }
+        this.paciente = pacienteVerificado.get();
+        log.info("Paciente inicializado: id={}, username={}", this.paciente.getId(), this.paciente.getUsername());
 
         setWidth("400px");
         setPadding(true);
         setSpacing(true);
 
-        // Título
         H3 titulo = new H3("Agendar cita");
 
-        // Navegación de meses para el calendario
         HorizontalLayout navMes = construirNavMes();
-
-        // Contenedor del calendario visual
         calendarioContainer = new Div();
         calendarioContainer.setWidthFull();
         recargarSesionesMes();
         calendarioContainer.add(construirCalendarioMes());
 
-        // Campos del formulario
         fechaHoraPicker = new DateTimePicker("Fecha y hora");
         fechaHoraPicker.setStep(Duration.ofMinutes(30));
         fechaHoraPicker.setMin(LocalDateTime.now());
@@ -90,24 +104,20 @@ public class AgendaCard extends VerticalLayout {
         lugarField = new TextField("Lugar (opcional)");
         lugarField.setMaxLength(255);
 
-        // Botón para agendar
         Button agendar = new Button("Agendar", e -> agendarCita());
-        agendar.addThemeNames("primary");
+        agendar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // ComboBox para citas programadas
         citasCombo = new ComboBox<>("Citas programadas");
         citasCombo.setItemLabelGenerator(s -> s.getFecha().format(FORMATO_FECHA) + " " +
                 s.getFecha().format(FORMATO_HORA) + " - " + s.getMotivo());
         citasCombo.setWidthFull();
         actualizarCitas();
 
-        // Botón para reprogramar
         Button reprogramar = new Button("Reprogramar", e -> reprogramarCita());
-        reprogramar.addThemeNames("secondary");
+        reprogramar.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         reprogramar.setEnabled(false);
         citasCombo.addValueChangeListener(e -> reprogramar.setEnabled(e.getValue() != null));
 
-        // Layout de botones
         HorizontalLayout botones = new HorizontalLayout(agendar, reprogramar);
         botones.setWidthFull();
         botones.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
@@ -115,20 +125,16 @@ public class AgendaCard extends VerticalLayout {
         add(titulo, navMes, calendarioContainer, fechaHoraPicker, motivoField, lugarField, citasCombo, botones);
     }
 
-    /**
-     * Construye la barra de navegación para cambiar de mes en el calendario.
-     * @return Layout con botones de navegación y etiqueta del mes
-     */
     private HorizontalLayout construirNavMes() {
         Button prev = new Button("‹");
-        prev.addThemeNames("tertiary");
+        prev.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         prev.addClickListener(e -> actualizarMesMostrado(mesMostrado.minusMonths(1)));
 
         etiquetaMes = new Span(capitalizarInicialMes(FORMATO_MES.format(mesMostrado)));
         etiquetaMes.getStyle().set("font-weight", "600");
 
         Button next = new Button("›");
-        next.addThemeNames("tertiary");
+        next.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         next.addClickListener(e -> actualizarMesMostrado(mesMostrado.plusMonths(1)));
 
         HorizontalLayout nav = new HorizontalLayout(prev, etiquetaMes, next);
@@ -138,10 +144,6 @@ public class AgendaCard extends VerticalLayout {
         return nav;
     }
 
-    /**
-     * Actualiza el mes mostrado en el calendario y recarga las sesiones.
-     * @param nuevoMes Nuevo mes a mostrar
-     */
     private void actualizarMesMostrado(YearMonth nuevoMes) {
         mesMostrado = nuevoMes;
         etiquetaMes.setText(capitalizarInicialMes(FORMATO_MES.format(mesMostrado)));
@@ -150,9 +152,6 @@ public class AgendaCard extends VerticalLayout {
         calendarioContainer.add(construirCalendarioMes());
     }
 
-    /**
-     * Recarga las sesiones del mes para mostrar en el calendario.
-     */
     private void recargarSesionesMes() {
         sesionesPorDia.clear();
         List<Sesion> sesiones = sesionService.obtenerSesionesPorPacienteYMes(paciente.getId(), mesMostrado);
@@ -162,10 +161,6 @@ public class AgendaCard extends VerticalLayout {
                 .forEach((k, v) -> sesionesPorDia.put(k, v.intValue()));
     }
 
-    /**
-     * Construye el grid del calendario para el mes actual.
-     * @return Div con el calendario
-     */
     private Div construirCalendarioMes() {
         Div cont = new Div();
         cont.setWidthFull();
@@ -177,7 +172,6 @@ public class AgendaCard extends VerticalLayout {
                 .set("max-width", "100%")
                 .set("min-width", "0");
 
-        // Días de la semana
         String[] dias = {"L", "M", "X", "J", "V", "S", "D"};
         for (String d : dias) {
             Div hd = new Div();
@@ -192,7 +186,6 @@ public class AgendaCard extends VerticalLayout {
             cont.add(hd);
         }
 
-        // Días del mes
         LocalDate primero = mesMostrado.atDay(1);
         int offset = primero.getDayOfWeek().getValue() - 1;
         int diasMes = mesMostrado.lengthOfMonth();
@@ -208,10 +201,6 @@ public class AgendaCard extends VerticalLayout {
         return cont;
     }
 
-    /**
-     * Crea una celda vacía para el calendario.
-     * @return Div vacío
-     */
     private Div crearCeldaVacia() {
         Div d = new Div();
         d.getStyle()
@@ -222,12 +211,6 @@ public class AgendaCard extends VerticalLayout {
         return d;
     }
 
-    /**
-     * Crea una celda para un día del calendario, resaltando festivos y citas.
-     * @param fecha Fecha del día
-     * @param count Número de citas en el día
-     * @return Div con la celda del día
-     */
     private Div crearCeldaDia(LocalDate fecha, int count) {
         boolean esDomingo = fecha.getDayOfWeek() == DayOfWeek.SUNDAY;
         boolean esFestivo = FestivosColombia.esFestivo(fecha);
@@ -271,8 +254,8 @@ public class AgendaCard extends VerticalLayout {
         }
 
         if (count > 0) {
-            Button badge = new Button(String.valueOf(count));
-            badge.addThemeNames("badge", "small");
+            Div badge = new Div();
+            badge.setText(String.valueOf(count));
             badge.getStyle()
                     .set("min-width", "18px")
                     .set("height", "18px")
@@ -289,21 +272,18 @@ public class AgendaCard extends VerticalLayout {
         }
 
         cell.addClickListener(e -> {
-            fechaHoraPicker.setValue(fecha.atTime(9, 0)); // Establece hora por defecto
+            fechaHoraPicker.setValue(fecha.atTime(9, 0));
         });
 
         return cell;
     }
 
-    /**
-     * Agenda una nueva cita.
-     */
+    @Transactional
     private void agendarCita() {
         LocalDateTime inicio = fechaHoraPicker.getValue();
         String txtMotivo = Optional.ofNullable(motivoField.getValue()).map(String::trim).orElse("");
         String txtLugar = Optional.ofNullable(lugarField.getValue()).map(String::trim).orElse("");
 
-        // Validaciones
         if (inicio == null) {
             mostrarNotificacion("Selecciona una fecha y hora.", NotificationVariant.LUMO_ERROR);
             return;
@@ -316,14 +296,17 @@ public class AgendaCard extends VerticalLayout {
             mostrarNotificacion("El motivo es obligatorio.", NotificationVariant.LUMO_ERROR);
             return;
         }
+        if (paciente == null || paciente.getId() == null) {
+            log.error("Paciente no válido: id=null, username={}", paciente != null ? paciente.getUsername() : "null");
+            mostrarNotificacion("Error: No se pudo identificar al paciente.", NotificationVariant.LUMO_ERROR);
+            return;
+        }
 
-        // Verificar disponibilidad (1 hora de cita + 30 min de desplazamiento)
         if (!sesionService.estaDisponible(inicio, DURACION_CITA)) {
             mostrarNotificacion("El horario seleccionado ya está ocupado o hay un conflicto con el desplazamiento.", NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        // Crear sesión
         Sesion sesion = new Sesion();
         sesion.setFecha(inicio);
         sesion.setMotivo(txtMotivo);
@@ -332,25 +315,24 @@ public class AgendaCard extends VerticalLayout {
         sesion.setLugar(txtLugar.isBlank() ? null : txtLugar);
         sesion.setDuracion(DURACION_CITA);
 
-        // Guardar y notificar
         try {
+            log.info("Guardando sesión: paciente_id={}, fecha={}, motivo={}", paciente.getId(), inicio, txtMotivo);
             sesionService.guardarSesion(sesion);
             mostrarNotificacion("Sesión programada: " + inicio.format(FORMATO_FECHA) + " " + inicio.format(FORMATO_HORA), NotificationVariant.LUMO_SUCCESS);
-            notificacionService.enviarNotificacionProgramacionMedico(sesion); // Notificación separada
+            notificacionService.enviarNotificacionProgramacionMedico(sesion);
             actualizarCitas();
             recargarSesionesMes();
             calendarioContainer.removeAll();
             calendarioContainer.add(construirCalendarioMes());
             limpiarFormulario();
         } catch (Exception ex) {
+            log.error("Error al guardar la sesión: paciente_id={}, mensaje={}", paciente.getId(), ex.getMessage(), ex);
             mostrarNotificacion("Error al guardar la sesión: " + ex.getMessage(), NotificationVariant.LUMO_ERROR);
-            throw ex; // Para depurar
+            throw ex;
         }
     }
 
-    /**
-     * Abre un diálogo para reprogramar una cita existente.
-     */
+    @Transactional
     private void reprogramarCita() {
         Sesion sesion = citasCombo.getValue();
         if (sesion == null) {
@@ -378,6 +360,7 @@ public class AgendaCard extends VerticalLayout {
             }
 
             try {
+                log.info("Reprogramando sesión: id={}, nuevaFecha={}", sesion.getId(), nuevaFecha);
                 Optional<Sesion> reprogramada = sesionService.reprogramarSesion(sesion.getId(), nuevaFecha, DURACION_CITA);
                 if (reprogramada.isPresent()) {
                     mostrarNotificacion("Cita reprogramada: " +
@@ -393,24 +376,23 @@ public class AgendaCard extends VerticalLayout {
                     mostrarNotificacion("No se pudo reprogramar: horario ocupado o cita no encontrada.", NotificationVariant.LUMO_ERROR);
                 }
             } catch (IllegalStateException ex) {
+                log.warn("No se pudo reprogramar: {}", ex.getMessage());
                 mostrarNotificacion("No se pudo reprogramar: " + ex.getMessage(), NotificationVariant.LUMO_ERROR);
             } catch (Exception ex) {
+                log.error("Error al reprogramar la cita: {}", ex.getMessage(), ex);
                 mostrarNotificacion("Error al reprogramar la cita: " + ex.getMessage(), NotificationVariant.LUMO_ERROR);
             }
         });
-        guardar.addThemeNames("primary");
+        guardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button cancelar = new Button("Cancelar", e -> dialog.close());
-        cancelar.addThemeNames("tertiary");
+        cancelar.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         HorizontalLayout botones = new HorizontalLayout(guardar, cancelar);
         dialog.add(nuevaFechaPicker, botones);
         dialog.open();
     }
 
-    /**
-     * Actualiza la lista de citas programadas en el ComboBox.
-     */
     private void actualizarCitas() {
         YearMonth mesActual = YearMonth.now();
         List<Sesion> citas = sesionService.obtenerSesionesPorPacienteYMes(paciente.getId(), mesActual);
@@ -421,35 +403,20 @@ public class AgendaCard extends VerticalLayout {
                 .collect(Collectors.toList()));
     }
 
-    /**
-     * Limpia los campos del formulario.
-     */
     private void limpiarFormulario() {
         fechaHoraPicker.clear();
         motivoField.clear();
         lugarField.clear();
     }
 
-    /**
-     * Capitaliza la primera letra del nombre del mes.
-     * @param texto Texto a capitalizar
-     * @return Texto capitalizado
-     */
     private String capitalizarInicialMes(String texto) {
         if (texto == null || texto.isBlank()) return texto;
-        return texto.substring(0, 1).toUpperCase(new Locale("es")) + texto.substring(1);
+        return texto.substring(0, 1).toUpperCase(Locale.of("es")) + texto.substring(1);
     }
 
-    /**
-     * Muestra una notificación al usuario con el estilo especificado.
-     * @param mensaje Mensaje a mostrar
-     * @param variant Estilo de la notificación (ej. LUMO_SUCCESS, LUMO_ERROR)
-     */
     private void mostrarNotificacion(String mensaje, NotificationVariant variant) {
-        Notification notification = new Notification(mensaje);
+        Notification notification = new Notification(mensaje, 3000, Position.TOP_CENTER);
         notification.addThemeVariants(variant);
-        notification.setDuration(3000);
-        notification.setPosition(Notification.Position.TOP_CENTER);
         notification.open();
     }
 }

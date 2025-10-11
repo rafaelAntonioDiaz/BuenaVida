@@ -1,4 +1,3 @@
-// java
 package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.HistoriaClinica;
@@ -17,8 +16,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.server.streams.UploadEvent;
-import com.vaadin.flow.server.streams.UploadHandler;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util.AdjuntosHelper;
 
 import java.io.IOException;
@@ -52,21 +49,17 @@ public class EstadosSaludCard extends Div {
         this.fileStorageService = fileStorageService;
         this.adjuntosHelper = new AdjuntosHelper(fileStorageService);
 
-        // Autoajuste y estilo compacto (usa la clase .card del tema + compact)
         addClassName("card");
         addClassName("card--compact");
         setWidthFull();
         getStyle().set("min-width", "0");
-        // Compactar controles dentro de la card
         getElement().getStyle().set("--lumo-text-field-size", "var(--lumo-size-s)");
         getElement().getStyle().set("--lumo-button-size", "var(--lumo-size-s)");
 
-        // Título
         H3 titulo = new H3("Cómo he estado");
         titulo.getStyle().set("margin-top", "0");
         add(titulo);
 
-        // Formulario inline para crear un nuevo estado (compacto)
         TextArea areaNuevo = new TextArea("Nuevo estado");
         areaNuevo.setWidthFull();
         areaNuevo.addThemeVariants(com.vaadin.flow.component.textfield.TextAreaVariant.LUMO_SMALL);
@@ -74,7 +67,7 @@ public class EstadosSaludCard extends Div {
         areaNuevo.setPlaceholder(
                 "Describe cómo te sientes, síntomas, cambios, apetito, idas al baño, sueño y todo lo que se te ocurra incluso los sueños."
         );
-        areaNuevo.setMaxHeight("12rem"); // evita que se vea enorme
+        areaNuevo.setMaxHeight("12rem");
 
         Button crearBtn = new Button("Guardar estado", e -> {
             String desc = Optional.ofNullable(areaNuevo.getValue()).orElse("").trim();
@@ -100,7 +93,6 @@ public class EstadosSaludCard extends Div {
         composer.getStyle().set("gap", "var(--lumo-space-s)");
         add(composer);
 
-        // Listado de estados (reciente -> antiguo)
         VerticalLayout lista = new VerticalLayout();
         lista.setPadding(false);
         lista.setSpacing(false);
@@ -110,7 +102,6 @@ public class EstadosSaludCard extends Div {
         if (hc.getSeguimientos() == null || hc.getSeguimientos().isEmpty()) {
             lista.add(new Paragraph("Aún no hay registros. Crea tu primer estado arriba."));
         } else {
-            // Descendente por fecha (nulos al final)
             List<SeguimientoSalud> ordenados = hc.getSeguimientos().stream()
                     .sorted((a, b) -> {
                         var fa = a.getFecha();
@@ -118,7 +109,7 @@ public class EstadosSaludCard extends Div {
                         if (fa == null && fb == null) return 0;
                         if (fa == null) return 1;
                         if (fb == null) return -1;
-                        return fb.compareTo(fa); // descendente
+                        return fb.compareTo(fa);
                     })
                     .collect(Collectors.toList());
 
@@ -149,7 +140,6 @@ public class EstadosSaludCard extends Div {
                 Paragraph texto = new Paragraph(Optional.ofNullable(seg.getDescripcion()).orElse("Sin descripción"));
                 texto.getStyle().set("margin", "0");
 
-                // Solo el más reciente y durante < 48h es editable
                 boolean editableReciente = esPrimero && fecha != null && Duration.between(fecha, ahora).toHours() < 48;
 
                 item.add(head, texto);
@@ -163,11 +153,6 @@ public class EstadosSaludCard extends Div {
                     aviso.getStyle().set("color", "var(--lumo-secondary-text-color)").set("margin", "0");
                     item.add(aviso);
                 }
-
-                // Adjuntos
-                /*H5 adjuntosTitulo = new H5("Adjuntos");
-                adjuntosTitulo.getStyle().set("margin", "0");
-                item.add(adjuntosTitulo);*/
 
                 VerticalLayout listaAdjuntos = new VerticalLayout();
                 listaAdjuntos.setPadding(false);
@@ -184,7 +169,6 @@ public class EstadosSaludCard extends Div {
                         refrescarListaAdjuntosConEliminar(seg, listaAdjuntos);
                         Notification.show("Adjunto agregado");
                     }, () -> Notification.show("Subida cancelada"));
-                    // Compactar controles del upload
                     upload.getElement().getStyle().set("--lumo-button-size", "var(--lumo-size-s)");
                     item.add(listaAdjuntos, new H5("Agregar adjuntos a este estado"), upload);
                 } else {
@@ -199,7 +183,6 @@ public class EstadosSaludCard extends Div {
         add(lista);
     }
 
-    // Diálogo para editar la descripción del seguimiento (solo se ofrece cuando es editable)
     private void abrirDialogoEditarSeguimiento(SeguimientoSalud seg, Paragraph pTexto) {
         Dialog dlg = new Dialog();
         String fechaTitulo = Optional.ofNullable(seg.getFecha())
@@ -307,75 +290,6 @@ public class EstadosSaludCard extends Div {
         return fila;
     }
 
-
-    // Upload genérico (opcional; el flujo usa el helper)
-    private Upload crearUpload(TriConsumer<String, String, String> onConfirm, Runnable onCancelUpload) {
-        Upload upload = new Upload();
-        upload.setWidthFull();
-        upload.setAutoUpload(true);
-        upload.setMaxFiles(10);
-        upload.setMaxFileSize(10 * 1024 * 1024); // 10 MB
-        upload.setAcceptedFileTypes(".pdf", ".jpg", ".jpeg", ".png");
-
-        upload.setUploadHandler(new UploadHandler() {
-            @Override
-            public void handleUploadRequest(UploadEvent event) throws IOException {
-                final String originalName = event.getFileName();
-                try (InputStream in = event.getInputStream()) {
-                    String rutaRelativa = fileStorageService.save(in, originalName);
-                    getUI().ifPresent(ui -> ui.access(() -> solicitarDescripcionArchivo(originalName, descripcion -> {
-                        if (descripcion == null || descripcion.isBlank()) {
-                            Notification.show("La descripción es obligatoria.");
-                            fileStorageService.delete(rutaRelativa);
-                            return;
-                        }
-                        onConfirm.accept(rutaRelativa, originalName, descripcion.trim());
-                    }, () -> {
-                        fileStorageService.delete(rutaRelativa);
-                        onCancelUpload.run();
-                    })));
-                } catch (IOException ex) {
-                    getUI().ifPresent(ui -> ui.access(() -> Notification.show("Error al guardar: " + originalName)));
-                    throw ex;
-                }
-            }
-        });
-
-        upload.addFileRejectedListener(e -> Notification.show("Archivo rechazado: " + e.getErrorMessage()));
-        return upload;
-    }
-
-    // Diálogo para solicitar descripción del archivo
-    private void solicitarDescripcionArchivo(String nombreArchivo, java.util.function.Consumer<String> onOk, Runnable onCancel) {
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Descripción del archivo");
-
-        com.vaadin.flow.component.textfield.TextField desc = new com.vaadin.flow.component.textfield.TextField("Descripción");
-        desc.setWidthFull();
-        desc.setPlaceholder("Ej.: Laboratorio 2025-01, RX columna AP/LAT, etc.");
-        desc.setMaxLength(300);
-
-        Button guardar = new Button("Guardar", e -> {
-            String val = Optional.ofNullable(desc.getValue()).orElse("").trim();
-            if (val.isBlank()) {
-                Notification.show("La descripción es obligatoria.");
-                return;
-            }
-            onOk.accept(val);
-            dialog.close();
-        });
-        Button cancelar = new Button("Cancelar", e -> {
-            onCancel.run();
-            dialog.close();
-        });
-
-        HorizontalLayout acciones = new HorizontalLayout(guardar, cancelar);
-        dialog.add(new VerticalLayout(new Paragraph("Archivo: " + nombreArchivo), desc));
-        dialog.getFooter().add(acciones);
-        dialog.open();
-    }
-
-    // Confirmación genérica
     private void confirmarEliminar(String texto, Runnable onConfirm) {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader("Confirmar");

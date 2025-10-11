@@ -95,7 +95,7 @@ public class PacienteView extends VerticalLayout {
         planClinico.addClassName("card");
         planClinico.getElement().getStyle().set("grid-area", "planClinico");
 
-        Component agenda = new AgendaCard(paciente, sesionService, notificacionService);
+        Component agenda = new AgendaCard(paciente, sesionService, notificacionService, pacienteRepositorio);
         agenda.addClassName("card");
         agenda.getElement().getStyle().set("grid-area", "schedule");
 

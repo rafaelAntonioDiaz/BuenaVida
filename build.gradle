@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.sendgrid:sendgrid-java:4.10.2'
     implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
         exclude group: 'org.neo4j'
+    implementation 'org.slf4j:slf4j-api'
     }
 
     compileOnly 'org.projectlombok:lombok'
