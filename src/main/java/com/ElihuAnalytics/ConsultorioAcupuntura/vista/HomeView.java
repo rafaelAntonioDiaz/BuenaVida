@@ -40,7 +40,7 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        Image logo = new Image("/git statusimages/logo-rafael-diaz-sarmiento.svg", "Rafael Antonio Díaz Sarmiento - Logo");
+        Image logo = new Image("/images/logo-rafael-diaz-sarmiento.svg", "Rafael Antonio Díaz Sarmiento - Logo");
         logo.addClassName("logo");
 
         H1 titulo = new H1("Buena Vida – Medicina Ancestral");
