@@ -1,9 +1,20 @@
 /* frontend/styles/app-layout.css */
+
+
 .app-topbar {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lumo-space-m);
   align-items: center;
+
+  background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+  background-image: url("/images/fondoNaturaleza.jpg");
+  background-size: cover;
+  background-position: center;
+  color: #2e3d34;
+  text-align: center;
+  padding: 2rem;
+
 }
 
 .app-topbar h1 {
