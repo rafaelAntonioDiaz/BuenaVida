@@ -1,0 +1,45 @@
+/* frontend/styles/vaadin-overrides.css
+   Reglas suaves para alinear visualmente componentes Vaadin con el theme.
+   No usar !important salvo cuando sea estrictamente necesario.
+*/
+
+/* Asegurar que login-form use variables y ancho del contenedor */
+vaadin-login-form {
+  width: 100%;
+  --vaadin-input-field-border-radius: var(--radius-sm, 8px);
+  --vaadin-button-primary-background: var(--color-primary, #499300);
+}
+
+/* ComboBox: items legibles (ya te dimos un bloque antes) */
+vaadin-combo-box-item,
+vaadin-item {
+  display: block;
+  white-space: normal;
+  line-height: 1.4;
+  padding: 0.25rem 0.6rem;
+  box-sizing: border-box;
+}
+
+/* Grid: cabecera y celdas compatibles con el theme */
+vaadin-grid {
+  --lumo-body-text-color: var(--color-text-medium);
+  --vaadin-grid-border-color: rgba(0,0,0,0.08);
+}
+
+/* Dialog: centrado y card-like */
+vaadin-dialog-overlay {
+  --vaadin-dialog-overlay-border-radius: var(--radius-md);
+  --vaadin-dialog-overlay-background: var(--bg-card-glass, rgba(255,255,255,0.94));
+  --vaadin-dialog-overlay-box-shadow: var(--shadow-lg);
+}
+
+/* Notification: tonos y border-radius */
+vaadin-notification {
+  --lumo-notification-background: var(--bg-card-glass, rgba(255,255,255,0.95));
+  --lumo-notification-border-radius: var(--radius-sm);
+}
+
+/* Skeleton: color acorde */
+vaadin-skeleton {
+  background: linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));
+}

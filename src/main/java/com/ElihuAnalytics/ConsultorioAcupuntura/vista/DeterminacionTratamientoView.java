@@ -21,19 +21,15 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotaPrivadaService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.tratamiento.DoctorNotasPrivadasCard;
 
 /**
- * Vista orquestadora del tratamiento para el médico:
- * Orden de cards:
- *  1) Paciente (foto y datos)
- *  2) Estados de salud (más recientes primero)
- *  3) Antecedentes relevantes (más reciente)
- *  4) Diagnósticos (historial; más reciente editable)
- *  5) Recomendaciones (más reciente editable)
- *  6) Prescripciones (más reciente editable)
- *  7) Adjuntos (catálogo)
+ * Vista orquestadora del tratamiento para el médico.
+ * Permite seleccionar un paciente y visualizar/editar su historia clínica completa.
  */
 @Route(value = "medico/tratamiento", layout = LayoutPrincipal.class)
 @PageTitle("Determinación del tratamiento")
 @RolesAllowed({"ADMINISTRADOR", "MEDICO"})
+@CssImport(value = "./styles/global-theme.css")
+@CssImport(value = "./styles/vaadin-components.css")
+@CssImport(value = "./styles/vaadin-overrides.css")
 @CssImport("./styles/medico-tratamiento.css")
 public class DeterminacionTratamientoView extends VerticalLayout {
 
@@ -60,21 +56,28 @@ public class DeterminacionTratamientoView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
+        addClassName("medico-trat-view");
 
         add(new H2("Determinación del tratamiento"));
 
-        // Selector de paciente
-        cbPaciente = new ComboBox<>("Paciente");
+        // Selector de paciente con configuración mejorada
+        cbPaciente = new ComboBox<>("Seleccione un paciente");
         cbPaciente.setWidthFull();
         cbPaciente.setClearButtonVisible(true);
+        cbPaciente.setPlaceholder("Buscar paciente...");
         cbPaciente.setItemLabelGenerator(p -> p.getNombres() + " " + p.getApellidos());
         cbPaciente.setItems(pacienteService.listarTodos());
         cbPaciente.addValueChangeListener(e -> recargar());
+
+        // Agregar clase específica para debugging si es necesario
+        cbPaciente.addClassName("paciente-selector");
+
         add(cbPaciente);
 
-        // Malla responsive
+        // Malla responsive para las cards
         grid = new FormLayout();
         grid.setWidthFull();
+        grid.addClassName("tratamiento-grid");
         grid.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("900px", 2),
@@ -82,33 +85,43 @@ public class DeterminacionTratamientoView extends VerticalLayout {
         add(grid);
     }
 
+    /**
+     * Recarga la información del paciente seleccionado.
+     */
     private void recargar() {
         grid.removeAll();
         Paciente p = cbPaciente.getValue();
+
         if (p == null) {
-            grid.add(new Paragraph("Selecciona un paciente para ver su información clínica."));
+            Paragraph mensaje = new Paragraph("Selecciona un paciente para ver su información clínica.");
+            mensaje.getStyle().set("text-align", "center");
+            grid.add(mensaje);
             return;
         }
 
-            try {
-                // Cargar/crear Historia Clínica
-                HistoriaClinica hc = historiaClinicaService.obtenerOCrearPorPacienteId(p.getId());
+        try {
+            // Cargar/crear Historia Clínica
+            HistoriaClinica hc = historiaClinicaService.obtenerOCrearPorPacienteId(p.getId());
 
+            // Ensamblar cards en el orden solicitado
+            Component cPaciente = new PacienteHeaderCard(p);
+            Component cEstados = new EstadosSaludResumenCard(hc);
+            Component cNotasPriv = new DoctorNotasPrivadasCard(hc, notaPrivadaService);
+            Component cAntecedentes = new AntecedentesRelevantesCard(hc.getId(), historiaClinicaService);
+            Component cDiagnosticos = new DiagnosticosCard(hc.getId(), historiaClinicaService);
+            Component cRecs = new RecomendacionesCardEditor(hc.getId(), historiaClinicaService);
+            Component cRx = new PrescripcionesCardEditor(hc.getId(), historiaClinicaService);
+            Component cAdj = new AdjuntosCatalogoCard(hc, historiaClinicaService, fileStorageService);
 
-                // Ensamblar cards en el orden solicitado
-                Component cPaciente = new PacienteHeaderCard(p);
-                Component cEstados = new EstadosSaludResumenCard(hc);
-                Component cNotasPriv = new DoctorNotasPrivadasCard(hc, notaPrivadaService);
-                Component cAntecedentes = new AntecedentesRelevantesCard(hc.getId(), historiaClinicaService);
-                Component cDiagnosticos = new DiagnosticosCard(hc.getId(), historiaClinicaService);
-                Component cRecs = new RecomendacionesCardEditor(hc.getId(), historiaClinicaService);
-                Component cRx   = new PrescripcionesCardEditor(hc.getId(), historiaClinicaService);
-                Component cAdj = new AdjuntosCatalogoCard(hc, historiaClinicaService, fileStorageService);
+            // Agregar todas las cards al grid
+            grid.add(cPaciente, cEstados, cAntecedentes, cNotasPriv, cDiagnosticos, cRecs, cRx, cAdj);
 
-                grid.add(cPaciente, cEstados, cAntecedentes, cNotasPriv,  cDiagnosticos, cRecs, cRx, cAdj);
-            } catch (Exception ex) {
-                grid.add(new Paragraph("No fue posible cargar la historia clínica del paciente seleccionado."));
-            }
+        } catch (Exception ex) {
+            Paragraph error = new Paragraph("No fue posible cargar la historia clínica del paciente seleccionado: " + ex.getMessage());
+            error.getStyle()
+                    .set("color", "var(--lumo-error-color)")
+                    .set("text-align", "center");
+            grid.add(error);
+        }
     }
-
 }

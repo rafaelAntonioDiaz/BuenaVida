@@ -6,26 +6,33 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 
 /**
- * Card de bienvenida para el paciente.
- * Se genera a partir de la sección existente en PacienteView (crearSeccionBienvenida),
- * replicando el estilo de "card" y el contenido.
+ * Card de bienvenida para el paciente con diseño destacado.
+ * Usa un fondo con gradiente verde y texto blanco para llamar la atención.
  */
 public class BienvenidaCard extends Div {
 
     public BienvenidaCard(Paciente paciente) {
-        // Estilo de "card" (equivalente a crearCard())
-        getStyle()
-                .set("padding", "var(--lumo-space-l)")
-                .set("background", "var(--lumo-base-color)")
-                .set("border-radius", "var(--lumo-border-radius-l)")
-                .set("box-shadow", "var(--lumo-box-shadow-s)");
+        // Aplicar estilos base de card
+        addClassName("card");
 
-        // Título: ¡Bienvenido, <Nombre>!
-        H3 titulo = new H3("¡Que gusto, " + paciente.getNombres() + "!");
-        // Texto descriptivo: igual al de la vista original
+        // El CSS ya maneja el fondo verde y el color blanco
+        // mediante .paciente-grid .card:nth-child(1)
+
+        // Título: ¡Qué gusto, <Nombre>!
+        H3 titulo = new H3("¡Qué gusto, " + paciente.getNombres() + "!");
+        titulo.getStyle()
+                .set("margin", "0")
+                .set("margin-bottom", "var(--lumo-space-s)")
+                .set("color", "white"); // Asegurar que sea blanco
+
+        // Texto descriptivo
         Paragraph texto = new Paragraph(
                 "Aquí puedes programar sesiones, reportar tu estado de salud y gestionar tus antecedentes relevantes."
         );
+        texto.getStyle()
+                .set("margin", "0")
+                .set("color", "rgba(255, 255, 255, 0.95)") // Blanco semi-transparente
+                .set("line-height", "1.6");
 
         // Ensamblar
         add(titulo, texto);

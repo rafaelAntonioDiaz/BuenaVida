@@ -14,6 +14,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -26,6 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Route(value = "paciente", layout = LayoutPrincipal.class)
 @PageTitle("Perfil del Paciente")
 @RolesAllowed("PACIENTE")
+@CssImport(value = "./styles/global-theme.css")
+@CssImport(value = "./styles/vaadin-components.css")
+@CssImport(value = "./styles/vaadin-overrides.css")
+@CssImport("./styles/paciente-view.css")  // o la hoja específica de la vista
 public class PacienteView extends VerticalLayout {
     private final UI ui;
     // Para poder cancelar la suscripción cuando se cierre la vista
@@ -79,6 +84,19 @@ public class PacienteView extends VerticalLayout {
     }
 
     private void construirDashboard(Paciente paciente, HistoriaClinica hc) {
+        // Botón de notificaciones FUERA del grid
+        Button solicitarPermisoNotificaciones = new Button("Habilitar Notificaciones", e -> {
+            UI.getCurrent().getPage().executeJs(
+                    "if (window.Notification && Notification.permission !== 'granted') {" +
+                            " Notification.requestPermission();" +
+                            "}"
+            );
+        });
+        solicitarPermisoNotificaciones.addClassName("btn-primary");
+        solicitarPermisoNotificaciones.getStyle()
+                .set("margin-bottom", "var(--lumo-space-m)");
+
+        // Grid con las cards
         Div grid = new Div();
         grid.setWidthFull();
         grid.addClassName("paciente-grid");
@@ -107,24 +125,16 @@ public class PacienteView extends VerticalLayout {
         antecedentes.addClassName("card");
         antecedentes.getElement().getStyle().set("grid-area", "antecedentes");
 
-        Button solicitarPermisoNotificaciones = new Button("Habilitar Notificaciones", e -> {
-            UI.getCurrent().getPage().executeJs(
-                    "if (window.Notification && Notification.permission !== 'granted') {" +
-                            " Notification.requestPermission();" +
-                            "}"
-            );
-        });
+        // Añadir solo las cards al grid (SIN el botón)
+        grid.add(bienvenida, perfil, planClinico, agenda, estados, antecedentes);
 
-        grid.add(bienvenida, solicitarPermisoNotificaciones, perfil, planClinico, agenda, estados, antecedentes);
-
-        VerticalLayout wrapper = new VerticalLayout(grid);
+        VerticalLayout wrapper = new VerticalLayout(solicitarPermisoNotificaciones, grid);
         wrapper.setWidthFull();
         wrapper.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         wrapper.addClassName("paciente-view");
 
         add(wrapper);
     }
-
     private void mostrarMensajeNoAutenticado() {
         removeAll();
         setAlignItems(Alignment.CENTER);

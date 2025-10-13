@@ -8,6 +8,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
@@ -28,6 +29,7 @@ import java.util.*;
  * Extraído fielmente desde PacienteView (crearSeccionAntecedentes),
  * con subida y eliminación de adjuntos (más nuevo arriba).
  */
+@CssImport("./styles/antecedentes-card.css")
 public class AntecedentesCard extends Div {
 
     private final HistoriaClinicaService historiaClinicaService;
@@ -46,7 +48,7 @@ public class AntecedentesCard extends Div {
 
         // Autoajuste y estilo compacto (usa la clase .card del tema + compact)
         addClassName("card");
-        addClassName("card--compact");
+        addClassName("antecedentes-card");
         setWidthFull();
         getStyle().set("min-width", "0");
         // Compactar controles dentro de la card
@@ -176,13 +178,13 @@ public class AntecedentesCard extends Div {
     private HorizontalLayout crearFilaAdjunto(String ruta, String descripcion, Runnable onEliminar) {
         Anchor enlace = new Anchor(ruta, descripcion);
         enlace.setTarget("_blank");
-        enlace.getStyle().set("word-break", "break-word").set("white-space", "normal");
-
+        enlace.addClassName("adjunto-link"); // clase semántica
         Button eliminar = new Button("Eliminar", e -> onEliminar.run());
         eliminar.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
 
         HorizontalLayout fila = new HorizontalLayout(enlace, eliminar);
         fila.setWidthFull();
+        fila.addClassName("fila-adjunto");  // << esta línea clave
         fila.setSpacing(false);
         fila.getStyle().set("gap", "var(--lumo-space-s)").set("min-width", "0");
         fila.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);

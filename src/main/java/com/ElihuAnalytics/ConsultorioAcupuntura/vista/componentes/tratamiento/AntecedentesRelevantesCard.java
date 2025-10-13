@@ -4,6 +4,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.AntecedenteRelevante;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.HistoriaClinica;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
@@ -12,17 +13,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 
 import java.util.Optional;
-
 public class AntecedentesRelevantesCard extends Div {
 
     private final Long historiaId;
     private final HistoriaClinicaService service;
-
     public AntecedentesRelevantesCard(Long historiaId, HistoriaClinicaService service) {
         this.historiaId = historiaId;
         this.service = service;
 
-        addClassName("card");
+        addClassNames("card");
+
+
         add(new H3("Antecedente relevante"));
 
         pintar();
@@ -38,6 +39,7 @@ public class AntecedentesRelevantesCard extends Div {
                 .orElse("No registrado");
 
         Paragraph pAnt = new Paragraph(ant);
+        pAnt.addClassName("antecedente-texto"); // ✅ clave para aplicar el fix CSS
 
         add(pAnt);
     }

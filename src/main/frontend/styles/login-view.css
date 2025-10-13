@@ -1,0 +1,182 @@
+/**
+ * login-view.css
+ * Estilos para LoginView y RegistroView
+ * Fondo natural coherente con el diseño global
+ */
+
+/* ============================================
+   ELIMINAR FONDOS BLANCOS DE VAADIN
+   ============================================ */
+
+/* Forzar transparencia en todos los contenedores */
+.login-view,
+.login-view > *:not(.login-card) {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* ============================================
+   FONDO DE LA VISTA
+   ============================================ */
+
+.login-view {
+  /* Fondo con imagen de naturaleza */
+  background: var(--bg-gradient-natural) !important;
+  background-image: url('/images/fondoNaturaleza.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+
+  /* Asegurar que ocupe toda la pantalla */
+  min-height: 100vh;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+
+  /* Animación de entrada */
+  animation: fadeIn 0.6s ease-in;
+}
+
+/* ============================================
+   TARJETA CENTRAL
+   ============================================ */
+
+.login-card {
+  background: var(--bg-card-glass, rgba(255, 255, 255, 0.93));
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-lg, 0 8px 20px rgba(0, 0, 0, 0.25));
+  width: 100%;
+  max-width: 420px;
+
+  /* Animación de entrada */
+  animation: slideUp 0.8s ease-out;
+}
+
+.login-card h1 {
+  color: var(--color-primary-dark);
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.login-card p {
+  color: var(--color-text-medium);
+  margin: 0 0 1rem 0;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   FORMULARIOS
+   ============================================ */
+
+.login-card vaadin-login-form,
+.login-card vaadin-text-field,
+.login-card vaadin-email-field,
+.login-card vaadin-password-field {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.login-card vaadin-button {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.login-card vaadin-button:hover {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   BOTÓN DE REGISTRO/VOLVER
+   ============================================ */
+
+.registro-btn {
+  margin-top: var(--lumo-space-m);
+  background-color: transparent !important;
+  color: var(--color-primary-dark) !important;
+  border: 2px solid var(--color-primary) !important;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.registro-btn:hover {
+  background-color: var(--color-primary-hover) !important;
+  color: white !important;
+  border-color: var(--color-primary-hover) !important;
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .login-view {
+    padding: var(--lumo-space-m);
+    align-items: flex-start;
+    padding-top: 10vh;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: none;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  .login-card h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-view {
+    padding: var(--lumo-space-s);
+  }
+
+  .login-card {
+    padding: 1.2rem;
+  }
+
+  .login-card h1 {
+    font-size: 1.3rem;
+  }
+
+  .login-card p {
+    font-size: 0.9rem;
+  }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

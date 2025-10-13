@@ -38,6 +38,11 @@ public class CalendarioMes extends VerticalLayout {
     private final Div calendarioContainer;
     private final Span etiquetaMes = new Span(capitalizarInicialMes(FORMATO_MES.format(YearMonth.now())));
 
+    static {
+        // Seguridad para asegurar que Java usa el locale español moderno
+        Locale.setDefault(Locale.of("es"));
+    }
+
     public CalendarioMes(Long pacienteId, SesionService sesionService, DateTimePicker fechaHoraPicker) {
         this.pacienteId = pacienteId;
         this.sesionService = sesionService;
@@ -60,16 +65,36 @@ public class CalendarioMes extends VerticalLayout {
         prev.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         prev.addClickListener(e -> actualizarMesMostrado(mesMostrado.minusMonths(1)));
 
-        etiquetaMes.getStyle().set("font-weight", "600");
+        // ---- Etiqueta del mes ----
+        etiquetaMes.addClassName("calendar-title");
+        etiquetaMes.getStyle()
+                .set("font-weight", "600")
+                .set("white-space", "nowrap")
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis")
+                .set("display", "inline-block")
+                .set("max-width", "60%")
+                .set("min-width", "fit-content")
+                .set("text-align", "center");
 
         Button next = new Button("›");
         next.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         next.addClickListener(e -> actualizarMesMostrado(mesMostrado.plusMonths(1)));
 
+        // ---- Contenedor del título + botones ----
         HorizontalLayout nav = new HorizontalLayout(prev, etiquetaMes, next);
         nav.setWidthFull();
         nav.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        nav.setAlignItems(FlexComponent.Alignment.CENTER);
         nav.setSpacing(true);
+
+        // Evita que el título se rompa o se apile
+        nav.getStyle()
+                .set("flex-wrap", "nowrap")
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis")
+                .set("box-sizing", "border-box");
+
         return nav;
     }
 

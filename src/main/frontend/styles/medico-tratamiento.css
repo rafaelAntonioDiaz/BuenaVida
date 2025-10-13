@@ -1,38 +1,565 @@
+/**
+ * medico-tratamiento.css
+ * Vista de gestión de tratamientos del médico
+ * Usa el sistema de diseño de global-theme.css
+ */
+
+/* ============================================
+   CONTENEDOR PRINCIPAL
+   ============================================ */
+
+.medico-trat-view {
+  animation: fadeIn var(--transition-medium) ease-out;
+}
+
+/* ============================================
+   GRID RESPONSIVE PARA TRATAMIENTOS
+   ============================================ */
+
 .medico-trat-view .tratamiento-grid {
   display: grid;
-  gap: var(--lumo-space-l);
+  gap: var(--space-responsive);
   grid-template-columns: 1fr;
 }
 
-/* Tablet */
+/* Tablet (≥ 900px): 2 columnas */
 @media (min-width: 900px) {
   .medico-trat-view .tratamiento-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Desktop */
+/* Desktop (≥ 1280px): 3 columnas */
 @media (min-width: 1280px) {
   .medico-trat-view .tratamiento-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-.card {
-  padding: var(--lumo-space-m);
-  border-radius: var(--lumo-border-radius-l);
-  background: var(--lumo-base-color);
-  box-shadow: var(--lumo-box-shadow-s);
-  min-width: 0;
+/* ============================================
+   CARDS DE TRATAMIENTO
+   ============================================ */
+
+.tratamiento-grid .card {
+  border-top: 3px solid var(--color-primary);
+  transition: all var(--transition-medium);
 }
+
+.tratamiento-grid .card:hover {
+  border-top-color: var(--color-primary-hover);
+}
+
+/* Cards con colores alternos para mejor distinción */
+.tratamiento-grid .card:nth-child(3n+1) {
+  border-top-color: var(--color-primary);
+}
+
+.tratamiento-grid .card:nth-child(3n+2) {
+  border-top-color: var(--color-secondary);
+}
+
+.tratamiento-grid .card:nth-child(3n+3) {
+  border-top-color: var(--color-primary-hover);
+}
+
+/* ============================================
+   ENCABEZADOS DE CARD
+   ============================================ */
 
 .card h3 {
   margin-top: 0;
   margin-bottom: var(--lumo-space-m);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--lumo-space-s);
 }
+
+.card h3::before {
+  content: '🌿';
+  font-size: 1.5em;
+}
+
+.card h4 {
+  margin-top: var(--lumo-space-m);
+  margin-bottom: var(--lumo-space-s);
+  color: var(--color-text-dark);
+  font-weight: 600;
+  font-size: var(--lumo-font-size-m);
+  border-bottom: 2px solid var(--lumo-contrast-10pct);
+  padding-bottom: var(--lumo-space-xs);
+}
+
+/* ============================================
+   CONTENIDO DE TRATAMIENTO
+   ============================================ */
 
 .linea {
   margin: 0 0 var(--lumo-space-s) 0;
+  padding: var(--lumo-space-s);
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary-hover);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  color: var(--color-text-medium);
+  line-height: 1.6;
+  transition: all var(--transition-fast);
 }
+
+.linea:hover {
+  background: var(--lumo-contrast-10pct);
+  transform: translateX(2px);
+}
+
+/* Líneas con diferentes estilos según tipo */
+.linea-diagnostico {
+  border-left-color: var(--color-info);
+  background: rgba(23, 162, 184, 0.05);
+}
+
+.linea-prescripcion {
+  border-left-color: var(--color-success);
+  background: rgba(40, 167, 69, 0.05);
+}
+
+.linea-nota {
+  border-left-color: var(--color-warning);
+  background: rgba(255, 193, 7, 0.05);
+}
+
+/* ============================================
+   LISTAS Y ELEMENTOS
+   ============================================ */
+
+.tratamiento-lista {
+  list-style: none;
+  padding: 0;
+  margin: var(--lumo-space-m) 0;
+}
+
+.tratamiento-lista li {
+  padding: var(--lumo-space-s);
+  margin-bottom: var(--lumo-space-xs);
+  border-left: 3px solid var(--color-primary);
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.tratamiento-lista li:hover {
+  background: var(--lumo-contrast-10pct);
+  transform: translateX(4px);
+}
+
+.tratamiento-lista li::before {
+  content: '•';
+  color: var(--color-primary);
+  font-weight: bold;
+  margin-right: var(--lumo-space-s);
+}
+
+/* ============================================
+   FORMULARIOS DE TRATAMIENTO
+   ============================================ */
+
+.tratamiento-form {
+  padding: var(--lumo-space-m);
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--radius-md);
+  margin-top: var(--lumo-space-m);
+}
+
+.tratamiento-form vaadin-text-field,
+.tratamiento-form vaadin-text-area,
+.tratamiento-form vaadin-combo-box {
+  width: 100%;
+  margin-bottom: var(--lumo-space-s);
+}
+
+.tratamiento-form vaadin-text-area {
+  min-height: 120px;
+}
+
+/* Botones del formulario */
+.tratamiento-form-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lumo-space-s);
+  margin-top: var(--lumo-space-m);
+  justify-content: flex-end;
+}
+
+/* ============================================
+   SECCIÓN DE PROGRESO
+   ============================================ */
+
+.progreso-tratamiento h3 {
+  color: white;
+  margin-top: 0;
+}
+
+.progreso-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: var(--lumo-space-s);
+}
+
+.progreso-bar-fill {
+  height: 100%;
+  background: white;
+  border-radius: var(--radius-lg);
+  transition: width var(--transition-slow);
+}
+
+.progreso-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: var(--lumo-space-m);
+  flex-wrap: wrap;
+  gap: var(--lumo-space-m);
+}
+
+.progreso-stat {
+  text-align: center;
+}
+
+.progreso-stat__number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.progreso-stat__label {
+  font-size: var(--lumo-font-size-s);
+  opacity: 0.9;
+  margin-top: var(--lumo-space-xs);
+}
+
+/* ============================================
+   TIMELINE DE TRATAMIENTO
+   ============================================ */
+
+.tratamiento-timeline {
+  position: relative;
+  padding-left: var(--lumo-space-l);
+  margin: var(--lumo-space-m) 0;
+}
+
+.tratamiento-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-primary);
+}
+
+.timeline-item {
+  position: relative;
+  padding: var(--lumo-space-m);
+  margin-bottom: var(--lumo-space-m);
+  background: var(--bg-card-glass);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary);
+  transition: all var(--transition-fast);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -23px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.timeline-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.timeline-item__fecha {
+  font-size: var(--lumo-font-size-s);
+  color: var(--color-text-light);
+  font-weight: 600;
+  margin-bottom: var(--lumo-space-xs);
+}
+
+.timeline-item__contenido {
+  color: var(--color-text-medium);
+  line-height: 1.6;
+}
+
+/* ============================================
+   SECCIÓN DE RECOMENDACIONES
+   ============================================ */
+
+.recomendaciones-section {
+  padding: var(--lumo-space-m);
+  background: var(--color-success-bg);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-success);
+  margin: var(--lumo-space-m) 0;
+}
+
+.recomendaciones-section h4 {
+  color: var(--color-success);
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--lumo-space-s);
+}
+
+.recomendaciones-section h4::before {
+  content: '💡';
+  font-size: 1.5em;
+}
+
+.recomendacion-item {
+  padding: var(--lumo-space-s);
+  margin-bottom: var(--lumo-space-s);
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   BADGES Y ETIQUETAS
+   ============================================ */
+
+.tratamiento-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: var(--lumo-space-xs);
+}
+
+.badge-activo {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.badge-completado {
+  background: rgba(23, 162, 184, 0.2);
+  color: var(--color-info);
+  border: 1px solid var(--color-info);
+}
+
+.badge-pendiente {
+  background: rgba(255, 193, 7, 0.2);
+  color: #856404;
+  border: 1px solid var(--color-warning);
+}
+
+.badge-urgente {
+  background: rgba(220, 53, 69, 0.2);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   TABS DE TRATAMIENTO
+   ============================================ */
+
+.tratamiento-tabs {
+  display: flex;
+  gap: var(--lumo-space-s);
+  margin-bottom: var(--lumo-space-m);
+  border-bottom: 2px solid var(--lumo-contrast-10pct);
+  flex-wrap: wrap;
+}
+
+.tratamiento-tab {
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+  border: none;
+  background: transparent;
+  color: var(--color-text-medium);
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.tratamiento-tab:hover {
+  color: var(--color-primary);
+  background: var(--lumo-contrast-5pct);
+}
+
+.tratamiento-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ============================================
+   SECCIÓN DE MEDICAMENTOS
+   ============================================ */
+
+.medicamento-card {
+  padding: var(--lumo-space-m);
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--lumo-contrast-10pct);
+  margin-bottom: var(--lumo-space-s);
+  transition: all var(--transition-fast);
+}
+
+.medicamento-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.medicamento-card__nombre {
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  font-size: var(--lumo-font-size-m);
+  margin-bottom: var(--lumo-space-xs);
+}
+
+.medicamento-card__dosis {
+  color: var(--color-text-medium);
+  font-size: var(--lumo-font-size-s);
+  margin-bottom: var(--lumo-space-xs);
+}
+
+.medicamento-card__frecuencia {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--radius-sm);
+  font-size: var(--lumo-font-size-xs);
+  color: var(--color-text-dark);
+  font-weight: 500;
+}
+
+/* ============================================
+   RESPONSIVE - MÓVIL
+   ============================================ */
+
+@media (max-width: 840px) {
+  .medico-trat-view .tratamiento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tratamiento-grid .card {
+    padding: var(--lumo-space-s);
+  }
+
+  .tratamiento-form-buttons {
+    flex-direction: column;
+  }
+
+  .tratamiento-form-buttons vaadin-button {
+    width: 100%;
+  }
+
+  .progreso-stats {
+    flex-direction: column;
+  }
+
+  .tratamiento-timeline {
+    padding-left: var(--lumo-space-m);
+  }
+
+  .timeline-item::before {
+    left: -18px;
+  }
+
+  .tratamiento-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tratamiento-tab {
+    white-space: nowrap;
+  }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+.tratamiento-grid .card {
+  animation: fadeIn var(--transition-medium) ease-out;
+  animation-fill-mode: both;
+}
+
+.tratamiento-grid .card:nth-child(1) { animation-delay: 0.1s; }
+.tratamiento-grid .card:nth-child(2) { animation-delay: 0.2s; }
+.tratamiento-grid .card:nth-child(3) { animation-delay: 0.3s; }
+.tratamiento-grid .card:nth-child(4) { animation-delay: 0.4s; }
+.tratamiento-grid .card:nth-child(5) { animation-delay: 0.5s; }
+.tratamiento-grid .card:nth-child(6) { animation-delay: 0.6s; }
+
+.timeline-item {
+  animation: fadeIn var(--transition-medium) ease-out;
+}
+
+/* ============================================
+   IMPRESIÓN
+   ============================================ */
+
+@media print {
+  .tratamiento-form,
+  .tratamiento-form-buttons,
+  vaadin-button {
+    display: none;
+  }
+
+  .card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .progreso-tratamiento {
+    background: none;
+    color: black;
+    border: 2px solid var(--color-primary);
+  }
+}
+
+/* ============================================
+   ACCESIBILIDAD
+   ============================================ */
+
+.tratamiento-grid .card:focus-within {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Alto contraste para mejor legibilidad */
+@media (prefers-contrast: high) {
+  .linea,
+  .medicamento-card {
+    border-width: 2px;
+  }
+
+  .tratamiento-badge {
+    border-width: 2px;
+  }
+} {
+  padding: var(--lumo-space-m);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  border-radius: var(--radius-md);
+  color: white;
+  margin-bottom: var(--lumo-space-l);
+}
+
+.progreso-tratamiento

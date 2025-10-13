@@ -6,6 +6,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.UsuarioRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.CodigoVerificacionRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -21,6 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Route("verificar")
 @PageTitle("Verificación de Código")
 @AnonymousAllowed
+@CssImport(value = "./styles/global-theme.css")
+@CssImport(value = "./styles/vaadin-components.css")
+@CssImport(value = "./styles/vaadin-overrides.css")
 public class VerificarCodigoView extends VerticalLayout {
 
     private final UsuarioRepository usuarioRepository;

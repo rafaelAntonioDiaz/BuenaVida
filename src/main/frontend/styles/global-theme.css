@@ -1,0 +1,500 @@
+/**
+ * global-theme.css
+ * Sistema de diseño global para Consultorio de Acupuntura
+ * Define variables CSS, estilos base y componentes reutilizables
+ */
+
+/* ============================================
+   VARIABLES CSS PERSONALIZADAS
+   ============================================ */
+:root {
+  /* Paleta de colores principales - Tonos naturales */
+  --color-primary: #499300;           /* Verde principal */
+  --color-primary-hover: #83C100;     /* Verde hover */
+  --color-primary-dark: #205c3b;      /* Verde oscuro */
+  --color-secondary: #2e7d32;         /* Verde secundario */
+  --color-text-dark: #2e3d34;         /* Texto oscuro */
+  --color-text-medium: #3e4c42;       /* Texto medio */
+  --color-text-light: #616161;        /* Texto claro */
+
+  /* Colores de estado */
+  --color-success: #28a745;           /* Verde éxito */
+  --color-success-bg: #e6f3e6;        /* Fondo verde claro */
+  --color-warning: #ffc107;           /* Amarillo advertencia */
+  --color-error: #dc3545;             /* Rojo error */
+  --color-info: #17a2b8;              /* Azul información */
+
+  /* Fondos y overlays */
+  --bg-overlay-light: rgba(255, 255, 255, 0.95);
+  --bg-overlay-medium: rgba(255, 255, 255, 0.9);
+  --bg-card-glass: rgba(255, 255, 255, 0.92);
+  --bg-gradient-natural: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+
+  /* Sombras */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.25);
+
+  /* Espaciado responsive */
+  --space-responsive: clamp(var(--lumo-space-s), 2vw, var(--lumo-space-l));
+
+  /* Bordes redondeados */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 25px;
+  --radius-full: 50%;
+
+  /* Transiciones */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ============================================
+   ESTILOS BASE GLOBALES
+   ============================================ */
+
+/* Reset de márgenes para headings */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  color: var(--color-primary-dark);
+}
+
+/* Párrafos y texto */
+p {
+  margin: 0 0 var(--lumo-space-m) 0;
+  color: var(--color-text-medium);
+  line-height: 1.6;
+}
+
+/* ============================================
+   COMPONENTES REUTILIZABLES - CARDS
+   ============================================ */
+
+.card {
+  padding: var(--lumo-space-m);
+  border-radius: var(--radius-md);
+  background: var(--bg-card-glass);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+  overflow: hidden;
+  transition: all var(--transition-medium);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: var(--lumo-space-m);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+/* Card con borde de acento */
+.card-accent {
+  border-left: 4px solid var(--color-primary);
+}
+
+.card-success {
+  border-left: 4px solid var(--color-success);
+  background: var(--color-success-bg);
+}
+
+/* ============================================
+   COMPONENTES REUTILIZABLES - BOTONES
+   ============================================ */
+
+/* Botón principal */
+vaadin-button.btn-primary,
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 0.7rem 1.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+vaadin-button.btn-primary:hover,
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón secundario */
+vaadin-button.btn-secondary,
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-secondary);
+  border: 2px solid var(--color-secondary);
+  border-radius: var(--radius-lg);
+  padding: 0.7rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+vaadin-button.btn-secondary:hover,
+.btn-secondary:hover {
+  background-color: var(--color-primary-hover);
+  color: white;
+  border-color: var(--color-primary-hover);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón pequeño/terciario */
+vaadin-button[theme~="tertiary"],
+vaadin-button[theme~="small"] {
+  transition: all var(--transition-fast);
+}
+
+vaadin-button[theme~="tertiary"]:hover,
+vaadin-button[theme~="small"]:hover {
+  transform: scale(1.05);
+}
+
+/* ============================================
+   COMPONENTES REUTILIZABLES - INPUTS
+   ============================================ */
+
+vaadin-text-field,
+vaadin-text-area,
+vaadin-combo-box,
+vaadin-date-picker,
+vaadin-date-time-picker {
+  width: 100%;
+  --lumo-border-radius: var(--radius-sm);
+}
+
+/* Focus state personalizado */
+vaadin-text-field:focus-within,
+vaadin-text-area:focus-within,
+vaadin-combo-box:focus-within {
+  --lumo-primary-color: var(--color-primary);
+}
+
+/* ============================================
+   LISTAS Y CONTENEDORES
+   ============================================ */
+
+.lista-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lumo-space-s);
+  margin-top: var(--lumo-space-m);
+}
+
+.item {
+  padding: var(--lumo-space-m);
+  border-radius: var(--radius-sm);
+  background: var(--lumo-contrast-5pct);
+  transition: all var(--transition-fast);
+}
+
+.item:hover {
+  background: var(--lumo-contrast-10pct);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Item con información de texto */
+.item__info {
+  margin: 0 0 var(--lumo-space-s) 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--color-text-medium);
+}
+
+/* ============================================
+   BADGES Y ETIQUETAS
+   ============================================ */
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid var(--color-warning);
+}
+
+.badge-primary {
+  background: rgba(73, 147, 0, 0.1);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+
+/* Flexbox utilities */
+.flex {
+  display: flex;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.gap-s {
+  gap: var(--lumo-space-s);
+}
+
+.gap-m {
+  gap: var(--lumo-space-m);
+}
+
+.gap-l {
+  gap: var(--lumo-space-l);
+}
+
+/* Text utilities */
+.text-center {
+  text-align: center;
+}
+
+.text-primary {
+  color: var(--color-primary-dark);
+}
+
+.text-secondary {
+  color: var(--color-text-medium);
+}
+
+.font-bold {
+  font-weight: 600;
+}
+
+/* Spacing utilities */
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.mt-s { margin-top: var(--lumo-space-s); }
+.mb-s { margin-bottom: var(--lumo-space-s); }
+.mt-m { margin-top: var(--lumo-space-m); }
+.mb-m { margin-bottom: var(--lumo-space-m); }
+.mt-l { margin-top: var(--lumo-space-l); }
+.mb-l { margin-bottom: var(--lumo-space-l); }
+
+/* Width utilities */
+.w-full {
+  width: 100%;
+}
+
+.w-auto {
+  width: auto;
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-medium) ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   RESPONSIVE HELPERS
+   ============================================ */
+
+/* Ocultar en móvil */
+@media (max-width: 840px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Ocultar en desktop */
+@media (min-width: 841px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-hover);
+}
+/* ============================================================
+   DECORACIÓN DE ENCABEZADOS (h3)
+   Fondo sutil tipo "HomeView"
+   ============================================================ */
+
+/* Fondo visual con textura natural suave */
+h3 {
+  position: relative;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.7); /* capa translúcida base */
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Imagen de fondo aplicada con pseudo-elemento */
+h3::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('/images/fondoNaturaleza-soft.png') center/cover no-repeat;
+  opacity: 0.25; /* control de visibilidad del fondo */
+  z-index: -1;   /* debajo del texto */
+  border-radius: inherit;
+  filter: brightness(1.1) saturate(0.9);
+  transition: opacity var(--transition-slow, 0.5s ease);
+}
+
+/* Efecto sutil al pasar el mouse */
+h3:hover::before {
+  opacity: 0.4;
+}
+/* ============================================================
+   FIX: Botones solitarios que ocupan ancho completo
+   ============================================================ */
+
+/* Por defecto, los botones NO deben ocupar todo el ancho */
+vaadin-button,
+button {
+  width: auto !important;              /* ajusta al contenido */
+  max-width: fit-content !important;   /* permite adaptarse si están dentro de layouts */
+  align-self: flex-start;              /* evita que se estiren en layouts verticales */
+}
+
+/* Si hay un grupo de botones, distribúyelos normalmente */
+.horizontal-buttons vaadin-button,
+.horizontal-buttons button {
+  flex: 0 0 auto !important;
+  margin-right: var(--lumo-space-s);
+}
+
+/* Pero si realmente se necesita botón ancho, usa esta clase explícitamente */
+.btn-full {
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
+}
+/* ============================================================
+   AGENDA CARD (PacienteView)
+   ============================================================ */
+
+.agenda-card {
+  background: var(--bg-card-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--lumo-space-m);
+  transition: all var(--transition-medium);
+}
+
+/* Título */
+.agenda-card h3 {
+  margin-top: 0;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+/* Botón principal */
+.agenda-card .btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.agenda-card .btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  transform: scale(1.03);
+}
+
+/* Contenedor desplegable con animación */
+.agenda-contenedor {
+  margin-top: var(--lumo-space-s);
+  overflow: hidden;
+  opacity: 0;
+  max-height: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease;
+}
+
+.agenda-contenedor[visible] {
+  opacity: 1;
+  max-height: 1000px; /* ajusta según contenido */
+}
+
+/* Lista de citas */
+.lista-citas {
+  margin-top: var(--lumo-space-l);
+  background: var(--bg-overlay-medium);
+  border-radius: var(--radius-md);
+  padding: var(--lumo-space-m);
+  box-shadow: var(--shadow-sm);
+}
+

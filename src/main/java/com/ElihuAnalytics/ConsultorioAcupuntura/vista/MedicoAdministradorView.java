@@ -17,6 +17,9 @@ import java.util.Optional;
 @Route(value = "medico", layout = LayoutPrincipal.class)
 @PageTitle("Médico")
 @RolesAllowed({"ADMINISTRADOR", "MEDICO"})
+@CssImport(value = "./styles/global-theme.css")
+@CssImport(value = "./styles/vaadin-components.css")
+@CssImport(value = "./styles/vaadin-overrides.css")
 @CssImport("./styles/medico-admin.css")
 public class MedicoAdministradorView extends VerticalLayout {
 
@@ -32,7 +35,7 @@ public class MedicoAdministradorView extends VerticalLayout {
         addClassName("medico-admin-view");
 
         String saludo = auth.getUsuarioAutenticado()
-                .map(u -> "Hola, " + Optional.ofNullable(u.getNombres()).orElse("Doctor") + " 👋")
+                .map(u -> "Querido " + Optional.ofNullable(u.getNombres()).orElse("Doctor") + " 👋")
                 .orElse("Hola, Doctor 👋");
 
         H2 titulo = new H2(saludo);

@@ -1,0 +1,82 @@
+/* ============================================================
+   Hoja de estilo: antecedentes-card.css
+   Corrige textos y adjuntos que se mostraban en vertical.
+   ============================================================ */
+
+/* Contenedor general de la tarjeta */
+.antecedentes-card {
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  writing-mode: horizontal-tb;
+}
+
+/* Párrafo con descripción */
+.antecedentes-card p {
+  display: block;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  color: var(--color-text-medium);
+  text-align: justify;
+  margin: 0;
+}
+
+/* ======================================
+   AJUSTE DE ENLACES DE ADJUNTOS
+   ====================================== */
+
+/* Enlace (anchor) de cada archivo adjunto */
+.antecedentes-card a {
+  display: inline-block;
+  white-space: normal;          /* líneas normales */
+  word-break: break-word;       /* no dividir letra a letra */
+  overflow-wrap: anywhere;
+  writing-mode: horizontal-tb;  /* texto horizontal */
+  text-orientation: mixed;
+  text-decoration: underline;
+  color: var(--color-primary-dark);
+  line-height: 1.4;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Fila contenedora del enlace + botón eliminar */
+.antecedentes-card .fila-adjunto {
+  display: flex;
+  flex-wrap: wrap;             /* permite varias líneas si el texto es largo */
+  gap: var(--lumo-space-s);
+  align-items: flex-start;
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Evita compresión dentro de layouts Vaadin */
+.antecedentes-card .fila-adjunto > * {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* Botón eliminar no se comprime */
+.antecedentes-card .fila-adjunto vaadin-button {
+  flex: 0 0 auto;
+}
+
+/* Asegura que los títulos y headers se vean correctamente */
+.antecedentes-card h3, .antecedentes-card h5 {
+  margin-top: 0;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ======================================
+   SEGURIDAD ADICIONAL
+   ====================================== */
+.antecedentes-card, .antecedentes-card * {
+  writing-mode: horizontal-tb !important;
+  min-width: 0 !important;
+}

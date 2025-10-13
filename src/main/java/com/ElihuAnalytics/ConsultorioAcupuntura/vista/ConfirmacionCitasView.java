@@ -38,6 +38,9 @@ import java.util.stream.Stream;
 @Route(value = "medico/citas", layout = LayoutPrincipal.class)
 @PageTitle("Confirmación de citas")
 @RolesAllowed({"ADMIN", "MEDICO"})
+@CssImport(value = "./styles/global-theme.css")
+@CssImport(value = "./styles/vaadin-components.css")
+@CssImport(value = "./styles/vaadin-overrides.css")
 @CssImport("./styles/medico-citas.css") // Corregido: añadido prefijo ./
 public class ConfirmacionCitasView extends VerticalLayout {
 

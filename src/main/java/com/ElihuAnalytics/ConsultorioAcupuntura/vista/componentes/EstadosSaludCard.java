@@ -236,12 +236,19 @@ public class EstadosSaludCard extends Div {
     private HorizontalLayout crearFilaAdjuntoSoloLink(String ruta, String descripcion) {
         Anchor enlace = new Anchor(ruta, descripcion);
         enlace.setTarget("_blank");
-        enlace.getStyle().set("word-break", "break-word").set("white-space", "normal");
+        enlace.addClassName("adjunto-link"); // para CSS
+        enlace.getStyle()
+                .remove("word-break")
+                .remove("white-space");
+
         HorizontalLayout fila = new HorizontalLayout(enlace);
+        fila.addClassName("fila-adjunto"); // para CSS
         fila.setWidthFull();
         fila.setSpacing(false);
-        fila.getStyle().set("gap", "var(--lumo-space-s)").set("min-width", "0");
         fila.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        fila.getStyle()
+                .set("gap", "var(--lumo-space-s)")
+                .set("min-width", "0");
         return fila;
     }
 
@@ -277,16 +284,22 @@ public class EstadosSaludCard extends Div {
     private HorizontalLayout crearFilaAdjuntoConEliminar(String ruta, String descripcion, Runnable onEliminar) {
         Anchor enlace = new Anchor(ruta, descripcion);
         enlace.setTarget("_blank");
-        enlace.getStyle().set("word-break", "break-word").set("white-space", "normal");
+        enlace.addClassName("adjunto-link");
+        enlace.getStyle()
+                .remove("word-break")
+                .remove("white-space");
 
         Button eliminar = new Button("Eliminar", e -> onEliminar.run());
         eliminar.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
 
         HorizontalLayout fila = new HorizontalLayout(enlace, eliminar);
+        fila.addClassName("fila-adjunto");
         fila.setWidthFull();
         fila.setSpacing(false);
-        fila.getStyle().set("gap", "var(--lumo-space-s)").set("min-width", "0");
         fila.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        fila.getStyle()
+                .set("gap", "var(--lumo-space-s)")
+                .set("min-width", "0");
         return fila;
     }
 
