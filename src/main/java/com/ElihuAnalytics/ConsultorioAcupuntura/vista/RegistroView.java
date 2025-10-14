@@ -12,7 +12,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -29,13 +32,13 @@ import java.util.Random;
 
 /**
  * RegistroView - Vista de registro de nuevos pacientes.
- * Diseño coherente con LoginView usando el mismo sistema visual.
+ * Diseño coherente con LoginView usando el mismo sistema visual con header de identidad.
  */
 @Route("registro")
 @PageTitle("Registro de Usuario")
 @AnonymousAllowed
 @CssImport("./styles/global-theme.css")
-@CssImport("./styles/login-view.css")  // ← Usa el mismo CSS que LoginView
+@CssImport("./styles/login-view.css")
 public class RegistroView extends VerticalLayout {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistroView.class);
@@ -58,31 +61,47 @@ public class RegistroView extends VerticalLayout {
         this.passwordEncoder = passwordEncoder;
 
         /* =====================================================
-         * CONFIGURACIÓN BÁSICA - Igual que LoginView
+         * CONFIGURACIÓN BÁSICA DE LA VISTA
          * ===================================================== */
-        /* =====================================================
-         * CONFIGURACIÓN BÁSICA - Igual que LoginView
-         * ===================================================== */
-        addClassName("login-view"); // ← Misma clase que LoginView
+        addClassName("login-view");
         setSizeFull();
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
 
-// 🔑 CRÍTICO: Eliminar padding y espaciado del contenedor raíz
+        // 🔒 CRÍTICO: Eliminar padding/spacing/margin del contenedor raíz
         setPadding(false);
         setSpacing(false);
         setMargin(false);
 
-// 🔑 CRÍTICO: Forzar fondo transparente
+        // 🔒 CRÍTICO: Forzar fondo transparente
         getStyle()
                 .set("background", "transparent")
                 .set("background-color", "transparent");
 
         /* =====================================================
-         * TARJETA CENTRAL - Igual que LoginView
+         * HEADER DE IDENTIDAD DEL CONSULTORIO
+         * ===================================================== */
+        Div header = crearHeader();
+
+        /* =====================================================
+         * CONTENEDOR PRINCIPAL (con espaciado para header fijo)
+         * ===================================================== */
+        VerticalLayout contenidoPrincipal = new VerticalLayout();
+        contenidoPrincipal.addClassName("login-view__content");
+        contenidoPrincipal.setSizeFull();
+        contenidoPrincipal.setPadding(false);
+        contenidoPrincipal.setSpacing(false);
+        contenidoPrincipal.setAlignItems(Alignment.CENTER);
+        contenidoPrincipal.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        // Forzar transparencia
+        contenidoPrincipal.getStyle()
+                .set("background", "transparent")
+                .set("background-color", "transparent");
+
+        /* =====================================================
+         * TARJETA CENTRAL
          * ===================================================== */
         VerticalLayout card = new VerticalLayout();
-        card.addClassName("login-card"); // ← Misma clase que LoginView
+        card.addClassName("login-card");
         card.setPadding(true);
         card.setSpacing(true);
         card.setAlignItems(Alignment.CENTER);
@@ -154,7 +173,7 @@ public class RegistroView extends VerticalLayout {
                 e -> UI.getCurrent().navigate("login"));
         volverBtn.setWidthFull();
         volverBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        volverBtn.addClassName("registro-btn"); // ← Mismo estilo que en LoginView
+        volverBtn.addClassName("registro-btn");
 
         /* =====================================================
          * LÓGICA DE VERIFICACIÓN
@@ -169,7 +188,7 @@ public class RegistroView extends VerticalLayout {
                 return;
             }
 
-            // Generar código aleatorio
+            // Generar código aleatorio de 6 dígitos
             codigoGenerado[0] = String.valueOf(new Random().nextInt(900000) + 100000);
 
             try {
@@ -255,6 +274,45 @@ public class RegistroView extends VerticalLayout {
                 volverBtn
         );
 
-        add(card);
+        contenidoPrincipal.add(card);
+
+        /* =====================================================
+         * ENSAMBLA LA VISTA COMPLETA
+         * ===================================================== */
+        add(header, contenidoPrincipal);
+    }
+
+    /**
+     * Crea el header de identidad del consultorio con logo y nombre.
+     *
+     * @return Div contenedor del header
+     */
+    private Div crearHeader() {
+        Div header = new Div();
+        header.addClassName("login-header");
+
+        // Logo del consultorio
+        Image logo = new Image("/images/logo-rafael-diaz-sarmiento.svg", "Logo Consultorio");
+        logo.addClassName("login-header__logo");
+
+        // Contenedor de texto
+        Div textoContainer = new Div();
+        textoContainer.addClassName("login-header__text");
+
+        // Título principal
+        H2 titulo = new H2("Buena Vida Medicina Ancestral");
+        titulo.addClassName("login-header__title");
+
+        // Subtítulo
+        Paragraph subtitulo = new Paragraph("Rafael Antonio Díaz Sarmiento");
+        subtitulo.addClassName("login-header__subtitle");
+
+        // Ensamblar texto
+        textoContainer.add(titulo, subtitulo);
+
+        // Ensamblar header
+        header.add(logo, textoContainer);
+
+        return header;
     }
 }

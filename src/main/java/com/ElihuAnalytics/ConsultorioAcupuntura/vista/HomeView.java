@@ -43,7 +43,7 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         Image logo = new Image("/images/logo-rafael-diaz-sarmiento.svg", "Rafael Antonio Díaz Sarmiento - Logo");
         logo.addClassName("logo");
 
-        H1 titulo = new H1("Buena Vida – Medicina Ancestral");
+        H1 titulo = new H1("Buena Vida  Medicina Ancestral");
         titulo.addClassName("titulo");
 
         Paragraph intro = new Paragraph("Acupuntura y medicina ancestral a domicilio en Bucaramanga, Floridablanca y Girón.");
@@ -105,4 +105,5 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
             if (!route.isEmpty()) event.forwardTo(route);
         }
     }
+
 }

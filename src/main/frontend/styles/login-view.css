@@ -1,16 +1,17 @@
 /**
  * login-view.css
  * Estilos para LoginView y RegistroView
- * Fondo natural coherente con el diseño global
+ * Diseño transparente progresivo - filosofía HomeView
  */
 
 /* ============================================
    ELIMINAR FONDOS BLANCOS DE VAADIN
    ============================================ */
 
-/* Forzar transparencia en todos los contenedores */
+/* Forzar transparencia en TODOS los contenedores */
 .login-view,
-.login-view > *:not(.login-card) {
+.login-view > *,
+.login-view vaadin-vertical-layout {
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -28,8 +29,9 @@
   background-attachment: fixed !important;
   background-repeat: no-repeat !important;
 
-  /* Asegurar que ocupe toda la pantalla */
+  /* Asegurar que ocupe toda la pantalla y más */
   min-height: 100vh;
+  height: auto;
   width: 100%;
   padding: 0;
   margin: 0;
@@ -39,15 +41,114 @@
 }
 
 /* ============================================
-   TARJETA CENTRAL
+   HEADER TRANSPARENTE CON EFECTO GLASS SUTIL
+   ============================================ */
+
+.login-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  /* Efecto glass muy sutil - casi transparente */
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* Espaciado */
+  padding: 1rem 2rem;
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  /* Animación de entrada */
+  animation: slideDown 0.5s ease-out;
+}
+
+/* Logo del consultorio con sombra para contraste */
+.login-header__logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* Texto del consultorio */
+.login-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.login-header__title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  /* Texto con sombra para legibilidad sobre fondo natural */
+  color: white;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+.login-header__subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  /* Texto con sombra para legibilidad */
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   CONTENEDOR PRINCIPAL (con espacio para header)
+   ============================================ */
+
+.login-view__content {
+  /* Espacio superior para el header fijo */
+  padding-top: 100px;
+  min-height: 100vh;
+
+  /* Centrado */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Espaciado lateral */
+  padding-left: var(--lumo-space-m);
+  padding-right: var(--lumo-space-m);
+  padding-bottom: var(--lumo-space-l);
+
+  /* Transparencia total */
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* ============================================
+   TARJETA CENTRAL - EFECTO GLASS MUY SUTIL
    ============================================ */
 
 .login-card {
-  background: var(--bg-card-glass, rgba(255, 255, 255, 0.93));
-  backdrop-filter: blur(10px);
+  /* Glass morphism muy sutil - más transparente */
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(12px);
+
+  /* Borde sutil para definir los límites */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
   padding: 2rem;
   border-radius: var(--radius-lg, 20px);
-  box-shadow: var(--shadow-lg, 0 8px 20px rgba(0, 0, 0, 0.25));
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 420px;
 
@@ -55,23 +156,31 @@
   animation: slideUp 0.8s ease-out;
 }
 
+/* Títulos con mejor contraste sobre fondo transparente */
 .login-card h1 {
-  color: var(--color-primary-dark);
+  color: white;
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
   text-align: center;
+  /* Sombra para legibilidad */
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .login-card p {
-  color: var(--color-text-medium);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0 0 1rem 0;
   text-align: center;
   font-size: 0.95rem;
+  font-weight: 500;
+  /* Sombra para legibilidad */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ============================================
-   FORMULARIOS
+   FORMULARIOS - Mejorar contraste
    ============================================ */
 
 .login-card vaadin-login-form,
@@ -80,6 +189,14 @@
 .login-card vaadin-password-field {
   width: 100%;
   margin-bottom: 0.5rem;
+}
+
+/* Mejorar visibilidad de los campos sobre fondo transparente */
+.login-card vaadin-text-field::part(input-field),
+.login-card vaadin-email-field::part(input-field),
+.login-card vaadin-password-field::part(input-field) {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-sm);
 }
 
 .login-card vaadin-button {
@@ -100,31 +217,68 @@
 
 .registro-btn {
   margin-top: var(--lumo-space-m);
-  background-color: transparent !important;
-  color: var(--color-primary-dark) !important;
-  border: 2px solid var(--color-primary) !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: 2px solid rgba(255, 255, 255, 0.6) !important;
   border-radius: var(--radius-lg);
   font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transition: all var(--transition-fast);
 }
 
 .registro-btn:hover {
-  background-color: var(--color-primary-hover) !important;
+  background-color: var(--color-primary) !important;
   color: white !important;
-  border-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary) !important;
   transform: scale(1.03);
   box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   LABELS - Mejorar visibilidad
+   ============================================ */
+
+.login-card vaadin-text-field::part(label),
+.login-card vaadin-email-field::part(label),
+.login-card vaadin-password-field::part(label) {
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* ============================================
    RESPONSIVE
    ============================================ */
 
+/* Tablet y móvil */
 @media (max-width: 768px) {
-  .login-view {
-    padding: var(--lumo-space-m);
+  /* Header más compacto */
+  .login-header {
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .login-header__logo {
+    height: 40px;
+  }
+
+  .login-header__title {
+    font-size: 1.2rem;
+  }
+
+  .login-header__subtitle {
+    font-size: 0.85rem;
+  }
+
+  /* Contenido */
+  .login-view__content {
+    padding-top: 120px;
+    padding-left: var(--lumo-space-s);
+    padding-right: var(--lumo-space-s);
     align-items: flex-start;
-    padding-top: 10vh;
   }
 
   .login-card {
@@ -132,6 +286,8 @@
     max-width: none;
     padding: 1.5rem;
     border-radius: var(--radius-md);
+    /* Un poco más opaco en móvil para mejor legibilidad */
+    background: rgba(255, 255, 255, 0.3) !important;
   }
 
   .login-card h1 {
@@ -140,12 +296,33 @@
 }
 
 @media (max-width: 480px) {
-  .login-view {
-    padding: var(--lumo-space-s);
+  .login-header {
+    padding: 0.6rem 0.75rem;
+    background: rgba(255, 255, 255, 0.25) !important;
+  }
+
+  .login-header__logo {
+    height: 36px;
+  }
+
+  .login-header__title {
+    font-size: 1.1rem;
+  }
+
+  .login-header__subtitle {
+    font-size: 0.8rem;
+  }
+
+  .login-view__content {
+    padding-top: 110px;
+    padding-left: var(--lumo-space-s);
+    padding-right: var(--lumo-space-s);
   }
 
   .login-card {
     padding: 1.2rem;
+    /* Aún más opaco en pantallas pequeñas */
+    background: rgba(255, 255, 255, 0.35) !important;
   }
 
   .login-card h1 {
@@ -179,4 +356,28 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* FIX TEMPORAL - Forzar transparencia total */
+* {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Excepto la card y los inputs */
+.login-card,
+.login-card vaadin-text-field::part(input-field),
+.login-card vaadin-email-field::part(input-field),
+.login-card vaadin-password-field::part(input-field) {
+  background: rgba(255, 255, 255, 0.25) !important;
 }

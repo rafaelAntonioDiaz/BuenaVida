@@ -1,83 +1,263 @@
+/**
+ * home-view.css
+ * Vista principal de bienvenida - Máxima transparencia
+ * Filosofía: mostrar el fondo natural sin obstáculos
+ */
+
+/* ============================================
+   VISTA PRINCIPAL - 100% TRANSPARENTE
+   ============================================ */
 .home-view {
+    /* Fondo natural */
     background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
     background-image: url("/images/fondoNaturaleza.jpg");
     background-size: cover;
     background-position: center;
-    color: #2e3d34;
+    background-attachment: fixed;
+
+    /* Sin contenedores opacos */
     text-align: center;
     padding: 2rem;
+
+    /* Animación de entrada */
+    animation: fadeIn 0.8s ease-in;
 }
 
+/* ============================================
+   LOGO
+   ============================================ */
 .logo {
     width: 80%;
+    max-width: 400px;
     height: auto;
     margin-bottom: 1rem;
+    /* Sombra para destacar sobre el fondo */
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    animation: fadeIn 1s ease-out;
 }
 
+/* ============================================
+   TÍTULO - Texto con sombra para legibilidad
+   ============================================ */
 .titulo {
     font-family: 'Playfair Display', serif;
     font-size: 2.2rem;
-    color: #205c3b;
+    font-weight: 700;
+    color: white;
     margin-bottom: 0.5rem;
+    /* Sombra para legibilidad sobre fondo natural */
+    text-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.4),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.8s ease-out;
 }
 
+/* ============================================
+   INTRODUCCIÓN
+   ============================================ */
 .intro {
     font-size: 1.1rem;
-    color: #3e4c42;
+    font-weight: 500;
+    color: white;
     margin-bottom: 2rem;
+    /* Sombra para legibilidad */
+    text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.4),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.8s ease-out;
 }
 
+/* ============================================
+   BOTONES DE ACCESO
+   ============================================ */
 .botones-acceso {
     gap: 1rem;
     margin-bottom: 2rem;
+    animation: slideUp 1s ease-out;
 }
 
+/* Botón principal - con efecto glass sutil */
 .boton-principal {
-    background-color: #499300;
+    background-color: var(--color-primary, #499300);
     color: white;
     border-radius: 25px;
     padding: 0.7rem 1.5rem;
     font-weight: 600;
+    /* Sombra pronunciada para destacar */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
 }
 
 .boton-principal:hover {
-    background-color: #83C100;
-    transform: scale(1.1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    background-color: var(--color-primary-hover, #83C100);
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
+/* Botón secundario - transparente con borde */
 .boton-secundario {
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: 25px;
     padding: 0.7rem 1.5rem;
     font-weight: 600;
-    color: #2e7d32;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
 .boton-secundario:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    background-color: #83C100; /* Era #32bf55 */
+    background-color: var(--color-primary, #499300);
+    border-color: var(--color-primary, #499300);
     color: white;
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
+/* ============================================
+   BOTONES DE REDES SOCIALES
+   ============================================ */
 .social-buttons {
     gap: 0.8rem;
+    animation: fadeIn 1.2s ease-out;
 }
 
 .social-btn {
+    /* Fondo glass sutil */
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
 .social-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.15);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-/* Tonos específicos */
-.facebook { color: #1877f2; }
-.twitter { color: #1da1f2; }
-.whatsapp { color: #25d366; }
-.linkedin { color: #0077b5; }
-.copy { color: #616161; }
+/* Colores específicos con mejor contraste */
+.facebook {
+    color: #1877f2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.twitter {
+    color: #1da1f2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.whatsapp {
+    color: #25d366;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.linkedin {
+    color: #0077b5;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.copy {
+    color: #616161;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .home-view {
+        padding: 1.5rem;
+    }
+
+    .logo {
+        width: 70%;
+        max-width: 280px;
+    }
+
+    .titulo {
+        font-size: 1.8rem;
+    }
+
+    .intro {
+        font-size: 1rem;
+    }
+
+    .botones-acceso {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .boton-principal,
+    .boton-secundario {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-view {
+        padding: 1rem;
+    }
+
+    .logo {
+        width: 65%;
+        max-width: 240px;
+    }
+
+    .titulo {
+        font-size: 1.5rem;
+    }
+
+    .intro {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .social-buttons {
+        gap: 0.6rem;
+    }
+
+    .social-btn {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
