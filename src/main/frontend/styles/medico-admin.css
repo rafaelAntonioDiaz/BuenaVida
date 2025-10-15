@@ -1,384 +1,206 @@
 /**
  * medico-admin.css
- * Vista administrativa del médico con grid responsive
- * Usa el sistema de diseño de global-theme.css
+ * Vista del médico/administrador - Derivado de HomeView
+ * Fondo natural + elementos glass morphism
  */
 
 /* ============================================
-   GRID RESPONSIVE PARA VISTA MÉDICO
+   CONTENEDOR PRINCIPAL - FONDO NATURAL
    ============================================ */
 
-.medico-grid {
-  display: grid;
-  gap: var(--space-responsive);
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "confirm"
-    "clinic"
-    "rx";
-  animation: fadeIn var(--transition-medium) ease-out;
-}
+.medico-admin-view {
+  /* Fondo natural heredado de HomeView */
+  background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+  background-image: url('/images/fondoNaturaleza.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
 
-/* Tablet (≥ 900px): 2 columnas, "confirm" ocupa el ancho completo */
-@media (min-width: 900px) {
-  .medico-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      "confirm confirm"
-      "clinic rx";
-  }
-}
-
-/* Desktop (≥ 1280px): 3 columnas */
-@media (min-width: 1280px) {
-  .medico-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas: "confirm clinic rx";
-  }
-}
-
-/* ============================================
-   MAPEO DE ÁREAS DEL GRID
-   ============================================ */
-
-/* Asignar cada card a su área correspondiente */
-.medico-grid .card:nth-child(1) {
-  grid-area: confirm;
-  border-top: 3px solid var(--color-warning);
-}
-
-.medico-grid .card:nth-child(2) {
-  grid-area: clinic;
-  border-top: 3px solid var(--color-primary);
-}
-
-.medico-grid .card:nth-child(3) {
-  grid-area: rx;
-  border-top: 3px solid var(--color-info);
-}
-
-/* ============================================
-   COMPONENTES INTERNOS - FILTROS
-   ============================================ */
-
-.medico-admin-view .filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lumo-space-s);
-  margin-bottom: var(--lumo-space-m);
-  padding: var(--lumo-space-m);
-  background: var(--lumo-contrast-5pct);
-  border-radius: var(--radius-sm);
-}
-
-/* Inputs de Vaadin ocupan 100% del ancho disponible */
-.medico-admin-view vaadin-text-field,
-.medico-admin-view vaadin-combo-box,
-.medico-admin-view vaadin-text-area,
-.medico-admin-view vaadin-date-picker,
-.medico-admin-view vaadin-date-time-picker {
-  flex: 1;
-  min-width: 200px;
-}
-
-.medico-admin-view vaadin-button {
-  min-width: 120px;
-}
-
-/* ============================================
-   LISTAS DE SESIONES
-   ============================================ */
-
-.lista-sesiones {
+  /* Layout centrado */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: var(--lumo-space-m);
-  margin-top: var(--lumo-space-m);
-}
-
-/* Item de sesión individual */
-.item-sesion {
-  padding: var(--lumo-space-m);
-  border-radius: var(--radius-sm);
-  background: var(--lumo-contrast-5pct);
-  border-left: 4px solid var(--color-warning);
-  min-width: 0;
-  transition: all var(--transition-fast);
-}
-
-.item-sesion:hover {
-  background: var(--lumo-contrast-10pct);
-  box-shadow: var(--shadow-sm);
-  transform: translateX(4px);
-}
-
-/* Sesión confirmada */
-.item-sesion__confirmada {
-  background-color: var(--color-success-bg);
-  border-left-color: var(--color-success);
-}
-
-/* Información de la sesión */
-.item-sesion__info {
-  margin: 0 0 var(--lumo-space-s) 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  color: var(--color-text-medium);
-  line-height: 1.6;
-}
-
-/* Nombre del paciente destacado */
-.item-sesion__paciente {
-  font-weight: 600;
-  color: var(--color-primary-dark);
-  font-size: var(--lumo-font-size-m);
-  margin-bottom: var(--lumo-space-xs);
-}
-
-/* Fecha y hora de la sesión */
-.item-sesion__fecha {
-  font-weight: 500;
-  color: var(--color-text-dark);
-  display: flex;
   align-items: center;
-  gap: var(--lumo-space-xs);
-}
+  justify-content: center;
+  padding: var(--lumo-space-l);
+  text-align: center;
 
-/* Botones de acción de sesiones */
-.item-sesion vaadin-horizontal-layout {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lumo-space-s);
-  margin-top: var(--lumo-space-s);
-}
-
-.item-sesion vaadin-button {
-  flex: 1;
-  min-width: 100px;
+  /* Animación de entrada */
+  animation: fadeIn 0.8s ease-in;
 }
 
 /* ============================================
-   HISTORIA CLÍNICA
+   TÍTULO Y SUBTÍTULO - ESTILO HOMEVIEW
    ============================================ */
 
-.historia-clinica-section {
-  padding: var(--lumo-space-m);
-  background: var(--lumo-contrast-5pct);
-  border-radius: var(--radius-sm);
-  margin-top: var(--lumo-space-m);
-}
-
-.historia-clinica-section h4 {
-  margin-top: 0;
-  color: var(--color-primary-dark);
-  border-bottom: 2px solid var(--color-primary);
-  padding-bottom: var(--lumo-space-s);
-}
-
-/* ============================================
-   PRESCRIPCIONES
-   ============================================ */
-
-.lista-prescripciones {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lumo-space-s);
-  margin-top: var(--lumo-space-m);
-}
-
-/* Item de prescripción individual */
-.item-prescripcion {
-  padding: var(--lumo-space-m);
-  border-radius: var(--radius-sm);
-  background: var(--lumo-contrast-5pct);
-  border-left: 4px solid var(--color-info);
-  min-width: 0;
-  transition: all var(--transition-fast);
-}
-
-.item-prescripcion:hover {
-  background: var(--lumo-contrast-10pct);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Texto de prescripción */
-.item-prescripcion__texto {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  color: var(--color-text-medium);
-  line-height: 1.6;
-  margin-bottom: var(--lumo-space-s);
-}
-
-/* Fecha de prescripción */
-.item-prescripcion__fecha {
-  font-size: var(--lumo-font-size-s);
-  color: var(--color-text-light);
-  font-style: italic;
-}
-
-/* Botones de prescripción */
-.lista-prescripciones + vaadin-horizontal-layout {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lumo-space-s);
-  margin-top: var(--lumo-space-m);
-}
-
-/* ============================================
-   FORMULARIOS
-   ============================================ */
-
-.medico-admin-view vaadin-form-layout {
-  gap: var(--lumo-space-m);
-}
-
-.medico-admin-view vaadin-text-area {
-  min-height: 120px;
-}
-
-/* Botones de formulario */
-.form-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lumo-space-s);
-  margin-top: var(--lumo-space-m);
-  justify-content: flex-end;
-}
-
-/* ============================================
-   ESTADOS Y BADGES
-   ============================================ */
-
-/* Badge de estado de sesión */
-.estado-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-lg);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.estado-programada {
-  background: rgba(255, 193, 7, 0.2);
-  color: #856404;
-  border: 1px solid var(--color-warning);
-}
-
-.estado-confirmada {
-  background: var(--color-success-bg);
-  color: var(--color-success);
-  border: 1px solid var(--color-success);
-}
-
-.estado-realizada {
-  background: rgba(23, 162, 184, 0.2);
-  color: var(--color-info);
-  border: 1px solid var(--color-info);
-}
-
-.estado-cancelada {
-  background: rgba(220, 53, 69, 0.2);
-  color: var(--color-error);
-  border: 1px solid var(--color-error);
-}
-
-/* ============================================
-   RESPONSIVE - MÓVIL
-   ============================================ */
-
-@media (max-width: 840px) {
-  .medico-admin-view .filters {
-    flex-direction: column;
-  }
-
-  .medico-admin-view vaadin-text-field,
-  .medico-admin-view vaadin-combo-box {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .item-sesion vaadin-horizontal-layout,
-  .lista-prescripciones + vaadin-horizontal-layout {
-    flex-direction: column;
-  }
-
-  .item-sesion vaadin-button,
-  .form-buttons vaadin-button {
-    width: 100%;
-  }
-
-  /* Cards con menos padding en móvil */
-  .medico-grid .card {
-    padding: var(--lumo-space-s);
-  }
-}
-
-/* ============================================
-   MEJORAS DE TIPOGRAFÍA
-   ============================================ */
-
-.medico-admin-view h3 {
-  margin-top: 0;
-  margin-bottom: var(--lumo-space-m);
-  color: var(--color-primary-dark);
-  font-weight: 600;
-}
-
-.medico-admin-view h4 {
-  margin-top: var(--lumo-space-m);
-  margin-bottom: var(--lumo-space-s);
-  color: var(--color-text-dark);
-  font-weight: 600;
+.medico-admin-view h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+  /* Sombra pronunciada para legibilidad */
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+  animation: slideDown 0.8s ease-out;
 }
 
 .medico-admin-view p {
-  margin: 0;
-  color: var(--color-text-medium);
-  line-height: 1.6;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 2rem;
+  /* Sombra para legibilidad */
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.8s ease-out;
 }
 
 /* ============================================
-   MENSAJES DE ESTADO
+   BOTONES - GLASS MORPHISM COMO HOMEVIEW
    ============================================ */
 
-.mensaje-info {
-  padding: var(--lumo-space-m);
-  border-radius: var(--radius-sm);
-  background: rgba(23, 162, 184, 0.1);
-  border-left: 4px solid var(--color-info);
-  color: var(--color-text-dark);
-  margin: var(--lumo-space-m) 0;
+.medico-admin-view vaadin-button {
+  /* Glass morphism coherente con HomeView */
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: white !important;
+  border-radius: 25px;
+  padding: 0.85rem 2rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+
+  /* Ancho fijo para coherencia visual */
+  width: 320px;
+  max-width: 90%;
+  margin-bottom: var(--lumo-space-m);
+
+  /* Animación de entrada */
+  animation: slideUp 1s ease-out;
 }
 
-.mensaje-success {
-  padding: var(--lumo-space-m);
-  border-radius: var(--radius-sm);
-  background: var(--color-success-bg);
-  border-left: 4px solid var(--color-success);
-  color: var(--color-text-dark);
-  margin: var(--lumo-space-m) 0;
+/* Botón primario con tema Lumo */
+.medico-admin-view vaadin-button[theme~="primary"] {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
 }
 
-.mensaje-warning {
-  padding: var(--lumo-space-m);
-  border-radius: var(--radius-sm);
-  background: #fff3cd;
-  border-left: 4px solid var(--color-warning);
-  color: #856404;
-  margin: var(--lumo-space-m) 0;
+.medico-admin-view vaadin-button:hover {
+  background: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Botón primario hover específico */
+.medico-admin-view vaadin-button[theme~="primary"]:hover {
+  background: var(--color-primary-dark) !important;
+  border-color: var(--color-primary-dark) !important;
+}
+
+/* ============================================
+   ANIMACIONES DE ENTRADA ESCALONADAS
+   ============================================ */
+
+.medico-admin-view h2 {
+  animation-delay: 0.1s;
+}
+
+.medico-admin-view p {
+  animation-delay: 0.2s;
+}
+
+.medico-admin-view vaadin-button:nth-of-type(1) {
+  animation-delay: 0.4s;
+}
+
+.medico-admin-view vaadin-button:nth-of-type(2) {
+  animation-delay: 0.5s;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .medico-admin-view {
+    padding: var(--lumo-space-m);
+  }
+
+  .medico-admin-view h2 {
+    font-size: 1.8rem;
+  }
+
+  .medico-admin-view p {
+    font-size: 1rem;
+  }
+
+  .medico-admin-view vaadin-button {
+    width: 100%;
+    max-width: 320px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .medico-admin-view {
+    padding: var(--lumo-space-s);
+  }
+
+  .medico-admin-view h2 {
+    font-size: 1.5rem;
+  }
+
+  .medico-admin-view p {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .medico-admin-view vaadin-button {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+  }
 }
 
 /* ============================================
    ANIMACIONES
    ============================================ */
 
-.medico-grid .card {
-  animation: fadeIn var(--transition-medium) ease-out;
-  animation-fill-mode: both;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.medico-grid .card:nth-child(1) { animation-delay: 0.1s; }
-.medico-grid .card:nth-child(2) { animation-delay: 0.2s; }
-.medico-grid .card:nth-child(3) { animation-delay: 0.3s; }
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

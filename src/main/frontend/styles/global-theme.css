@@ -53,6 +53,18 @@
 /* ============================================
    ESTILOS BASE GLOBALES
    ============================================ */
+/* Asegura que los layouts full-height funcionen */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent; /* permitimos que la app muestre su fondo */
+}
+
+/* Si tu app monta el contenido en #root u otro id, puedes incluirlo */
+#root, vaadin-app-layout {
+  height: 100%;
+}
 
 /* Reset de márgenes para headings */
 h1, h2, h3, h4, h5, h6 {

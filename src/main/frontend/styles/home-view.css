@@ -1,263 +1,276 @@
 /**
  * home-view.css
- * Vista principal de bienvenida - Máxima transparencia
- * Filosofía: mostrar el fondo natural sin obstáculos
+ * BASE ESTÉTICA DE TODA LA APLICACIÓN
+ * Fondo de naturaleza + elementos transparentes con efectos glass
  */
 
 /* ============================================
-   VISTA PRINCIPAL - 100% TRANSPARENTE
+   VISTA PRINCIPAL - FONDO NATURAL SIEMPRE VISIBLE
    ============================================ */
 .home-view {
-    /* Fondo natural */
-    background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
-    background-image: url("/images/fondoNaturaleza.jpg");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+  /* Ocupar toda la pantalla */
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 2rem;
 
-    /* Sin contenedores opacos */
-    text-align: center;
-    padding: 2rem;
+  /* FONDO CLAVE: imagen de naturaleza */
+  background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+  background-image: url('/images/fondoNaturaleza.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
 
-    /* Animación de entrada */
-    animation: fadeIn 0.8s ease-in;
+  /* Centrado del contenido */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  /* Animación de entrada suave */
+  animation: fadeIn 0.8s ease-in;
 }
 
 /* ============================================
-   LOGO
+   LOGO - TRANSPARENTE SOBRE EL FONDO
    ============================================ */
 .logo {
-    width: 80%;
-    max-width: 400px;
-    height: auto;
-    margin-bottom: 1rem;
-    /* Sombra para destacar sobre el fondo */
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    animation: fadeIn 1s ease-out;
+  width: 80%;
+  max-width: 400px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  /* Sombra para destacar sobre el fondo */
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+  animation: fadeIn 1s ease-out;
 }
 
 /* ============================================
-   TÍTULO - Texto con sombra para legibilidad
+   TÍTULO - TEXTO BLANCO CON SOMBRA
    ============================================ */
 .titulo {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 0.5rem;
-    /* Sombra para legibilidad sobre fondo natural */
-    text-shadow:
-        0 3px 6px rgba(0, 0, 0, 0.4),
-        0 2px 4px rgba(0, 0, 0, 0.3);
-    animation: slideDown 0.8s ease-out;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+  /* Sombra pronunciada para legibilidad sobre fondo natural */
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+  animation: slideDown 0.8s ease-out;
 }
 
 /* ============================================
-   INTRODUCCIÓN
+   INTRO - TEXTO BLANCO LEGIBLE
    ============================================ */
 .intro {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: white;
-    margin-bottom: 2rem;
-    /* Sombra para legibilidad */
-    text-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.4),
-        0 1px 2px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.8s ease-out;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 2rem;
+  /* Sombra para legibilidad */
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.8s ease-out;
 }
 
 /* ============================================
-   BOTONES DE ACCESO
+   BOTONES - EFECTO GLASS CON HOVER
    ============================================ */
 .botones-acceso {
-    gap: 1rem;
-    margin-bottom: 2rem;
-    animation: slideUp 1s ease-out;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  animation: slideUp 1s ease-out;
 }
 
-/* Botón principal - con efecto glass sutil */
+/* Botón principal - Glass morphism */
 .boton-principal {
-    background-color: var(--color-primary, #499300);
-    color: white;
-    border-radius: 25px;
-    padding: 0.7rem 1.5rem;
-    font-weight: 600;
-    /* Sombra pronunciada para destacar */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: white !important;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .boton-principal:hover {
-    background-color: var(--color-primary-hover, #83C100);
-    transform: scale(1.08);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  background: var(--color-primary, #499300) !important;
+  border-color: var(--color-primary, #499300) !important;
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* Botón secundario - transparente con borde */
+/* Botón secundario - Glass morphism */
 .boton-secundario {
-    background-color: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    border: 2px solid rgba(255, 255, 255, 0.6);
-    border-radius: 25px;
-    padding: 0.7rem 1.5rem;
-    font-weight: 600;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.6) !important;
+  color: white !important;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .boton-secundario:hover {
-    background-color: var(--color-primary, #499300);
-    border-color: var(--color-primary, #499300);
-    color: white;
-    transform: scale(1.08);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  background: var(--color-primary-hover, #83C100) !important;
+  border-color: var(--color-primary-hover, #83C100) !important;
+  color: white !important;
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 /* ============================================
-   BOTONES DE REDES SOCIALES
+   BOTONES SOCIALES - GLASS SUTIL
    ============================================ */
 .social-buttons {
-    gap: 0.8rem;
-    animation: fadeIn 1.2s ease-out;
+  gap: 0.8rem;
+  animation: fadeIn 1.2s ease-out;
 }
 
 .social-btn {
-    /* Fondo glass sutil */
-    background-color: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+  /* Fondo glass muy sutil */
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .social-btn:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-    transform: scale(1.15);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-/* Colores específicos con mejor contraste */
+/* Colores específicos con sombra */
 .facebook {
-    color: #1877f2;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #1877f2 !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .twitter {
-    color: #1da1f2;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #1da1f2 !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .whatsapp {
-    color: #25d366;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #25d366 !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .linkedin {
-    color: #0077b5;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #0077b5 !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .copy {
-    color: #616161;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #616161 !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-    .home-view {
-        padding: 1.5rem;
-    }
+  .home-view {
+    padding: 1.5rem;
+  }
 
-    .logo {
-        width: 70%;
-        max-width: 280px;
-    }
+  .logo {
+    width: 70%;
+    max-width: 280px;
+  }
 
-    .titulo {
-        font-size: 1.8rem;
-    }
+  .titulo {
+    font-size: 1.8rem;
+  }
 
-    .intro {
-        font-size: 1rem;
-    }
+  .intro {
+    font-size: 1rem;
+  }
 
-    .botones-acceso {
-        flex-direction: column;
-        width: 100%;
-        max-width: 300px;
-    }
+  .botones-acceso {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .boton-principal,
-    .boton-secundario {
-        width: 100%;
-    }
+  .boton-principal,
+  .boton-secundario {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-    .home-view {
-        padding: 1rem;
-    }
+  .home-view {
+    padding: 1rem;
+  }
 
-    .logo {
-        width: 65%;
-        max-width: 240px;
-    }
+  .logo {
+    width: 65%;
+    max-width: 240px;
+  }
 
-    .titulo {
-        font-size: 1.5rem;
-    }
+  .titulo {
+    font-size: 1.5rem;
+  }
 
-    .intro {
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
-    }
+  .intro {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
 
-    .social-buttons {
-        gap: 0.6rem;
-    }
+  .social-buttons {
+    gap: 0.6rem;
+  }
 
-    .social-btn {
-        width: 40px;
-        height: 40px;
-    }
+  .social-btn {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* ============================================
    ANIMACIONES
    ============================================ */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

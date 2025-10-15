@@ -35,8 +35,17 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         this.auth = auth;
         this.appUrl = appUrl;
 
+        // Dentro del constructor de HomeView, después de setSizeFull():
         addClassName("home-view");
         setSizeFull();
+// Forzar fondo transparente en el contenedor raíz
+        getStyle()
+                .set("background", "transparent")
+                .set("background-color", "transparent");
+
+// Asegura por código que el host HTML tenga min-height:100vh (fallback)
+        getElement().getStyle().set("min-height", "100vh");
+
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
