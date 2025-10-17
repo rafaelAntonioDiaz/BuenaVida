@@ -138,12 +138,12 @@ public class RegistroView extends VerticalLayout {
         TextField celularField = new TextField("Celular");
         celularField.setWidthFull();
         celularField.setRequired(true);
-        celularField.setPlaceholder("3001234567");
+        celularField.setPlaceholder("Pon el numero de tu celular");
 
         EmailField emailField = new EmailField("Correo electrónico");
         emailField.setWidthFull();
         emailField.setRequired(true);
-        emailField.setPlaceholder("usuario@dominio.com");
+        emailField.setPlaceholder("Debe ser un correo que funcione");
 
         PasswordField passwordField = new PasswordField("Contraseña");
         passwordField.setWidthFull();

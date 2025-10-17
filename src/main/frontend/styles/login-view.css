@@ -119,14 +119,13 @@
 }
 
 /* ============================================
-   CAMPOS DE TEXTO - FIX: Transparencia y Borde Verde
+   CAMPOS DE TEXTO - FIX COMPLETO Y FINAL
    ============================================ */
 
-/* 1. Anular el fondo blanco de Lumo para todos los campos (TextField, PasswordField) */
+/* 1. Anular el fondo blanco de Lumo para todos los campos */
 .login-card vaadin-text-field,
 .login-card vaadin-email-field,
 .login-card vaadin-password-field {
-    /* Variables para forzar transparencia */
     --lumo-contrast-5pct: transparent !important;
     --lumo-input-field-background-color: transparent !important;
     --lumo-field-background-color: transparent !important;
@@ -134,182 +133,41 @@
     margin-bottom: 0.5rem;
 }
 
-/* 2. Aplicar estilos de cristal (Borde Verde, Texto Blanco) al área de entrada */
+/* 2. Estilos para el área de entrada (donde se escribe) */
 .login-card vaadin-text-field::part(input-field),
 .login-card vaadin-email-field::part(input-field),
 .login-card vaadin-password-field::part(input-field) {
-    /* Sobrescribir el fondo para transparencia */
     background-color: transparent !important;
-
-    /* FIX: Aplicar Borde Verde (color primario) */
     border: 2px solid var(--color-primary) !important;
     border-radius: var(--lumo-border-radius-m);
     padding: var(--lumo-space-xs) var(--lumo-space-s);
 
-    /* Asegurar que el texto de entrada sea blanco */
+    /* El texto que escribe el usuario sigue siendo blanco para contrastar con el borde */
     color: white !important;
-    /* Placeholder text */
-    --lumo-secondary-text-color: rgba(255, 255, 255, 0.7);
 }
 
-/* 3. Etiquetas de los campos (Label) - Blanco con Sombra */
+/* 3. FIX CRÍTICO: Placeholder visible */
+.login-card vaadin-text-field::part(input-field)::placeholder,
+.login-card vaadin-email-field::part(input-field)::placeholder,
+.login-card vaadin-password-field::part(input-field)::placeholder {
+  /* Usamos un color gris medio, más claro que la etiqueta pero visible */
+  color: var(--color-text-medium, #85929E) !important;
+  opacity: 1; /* Aseguramos que no esté transparente */
+}
+
+/* 4. Etiquetas de los campos (Label) - OSCURO para alto contraste */
 .login-card vaadin-text-field::part(label),
 .login-card vaadin-email-field::part(label),
 .login-card vaadin-password-field::part(label) {
-  color: white;
+  color: var(--color-text-dark, #2E4053) !important;
   font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: none;
 }
 
-/* Mejorar el estado de Focus */
+/* 5. Mejorar el estado de Focus (cuando se hace clic en el campo) */
 .login-card vaadin-text-field:focus-within::part(input-field),
 .login-card vaadin-email-field:focus-within::part(input-field),
 .login-card vaadin-password-field:focus-within::part(input-field) {
     border-color: var(--color-primary-hover) !important;
     box-shadow: 0 0 0 1px var(--color-primary-hover), 0 0 8px 1px rgba(131, 193, 0, 0.5);
-}
-
-/* ============================================
-   BOTÓN DE REGISTRO (Glass Morphism)
-   ============================================ */
-
-.registro-btn {
-  margin-top: var(--lumo-space-m);
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  border: 2px solid rgba(255, 255, 255, 0.6) !important;
-  border-radius: var(--radius-lg);
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  transition: all var(--transition-fast);
-}
-
-.registro-btn:hover {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  transform: scale(1.03);
-}
-
-/* ... (Las secciones de responsive y animaciones se mantienen) */
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-
-/* Tablet y móvil */
-@media (max-width: 768px) {
-  /* Header más compacto */
-  .login-header {
-    padding: 0.75rem 1rem;
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.2) !important;
-  }
-
-  .login-header__logo {
-    height: 40px;
-  }
-
-  .login-header__title {
-    font-size: 1.2rem;
-  }
-
-  .login-header__subtitle {
-    font-size: 0.85rem;
-  }
-
-  /* Contenido */
-  .login-view__content {
-    padding-top: 120px;
-    padding-left: var(--lumo-space-s);
-    padding-right: var(--lumo-space-s);
-    align-items: flex-start;
-  }
-
-  .login-card {
-    width: 100%;
-    max-width: none;
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    /* Un poco más opaco en móvil para mejor legibilidad */
-    background: rgba(255, 255, 255, 0.3) !important;
-  }
-
-  .login-card h1 {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-header {
-    padding: 0.6rem 0.75rem;
-    background: rgba(255, 255, 255, 0.25) !important;
-  }
-
-  .login-header__logo {
-    height: 36px;
-  }
-
-  .login-header__title {
-    font-size: 1.1rem;
-  }
-
-  .login-header__subtitle {
-    font-size: 0.8rem;
-  }
-
-  .login-view__content {
-    padding-top: 110px;
-    padding-left: var(--lumo-space-s);
-    padding-right: var(--lumo-space-s);
-  }
-
-  .login-card {
-    padding: 1.2rem;
-    /* Aún más opaco en pantallas pequeñas */
-    background: rgba(255, 255, 255, 0.35) !important;
-  }
-
-  .login-card h1 {
-    font-size: 1.3rem;
-  }
-
-  .login-card p {
-    font-size: 0.9rem;
-  }
-}
-
-/* ============================================
-   ANIMACIONES
-   ============================================ */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
