@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.login.LoginForm;
+import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -97,6 +98,27 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         loginForm = new LoginForm();
         loginForm.setAction("login"); // 📍 ruta por defecto para el SecurityFilter
         loginForm.setForgotPasswordButtonVisible(false);
+        // FIX 1: LOCALIZACIÓN Y CONTRASTE DE TEXTO
+        LoginI18n i18n = LoginI18n.createDefault();
+        LoginI18n.Form i18nForm = i18n.getForm();
+
+        // Corregir etiquetas de campos
+        i18nForm.setUsername("Correo electrónico"); // FIX: Cambiar "Username"
+        i18nForm.setPassword("Contraseña"); // FIX: Cambiar "Password"
+
+        // Corregir texto del botón
+        i18nForm.setSubmit("Iniciar sesión"); // FIX: Cambiar "Log in"
+
+        // Opcional: El H1 ya dice el título. Se quita el título interno del LoginForm.
+        i18nForm.setTitle("");
+
+        loginForm.setI18n(i18n); // Aplicar la configuración de idioma
+
+        // FIX 2: Contraste del botón "Iniciar sesión".
+        // Se fuerza la variante "primary" para garantizar fondo oscuro y texto blanco (Glass).
+        loginForm.getElement().executeJs(
+                "this.$.vaadinLogin.querySelector('vaadin-button').setAttribute('theme', 'primary');"
+        );
 
         // ⚡ Parche para evitar el warning de Copilot en login/logout
         loginForm.addLoginListener(e -> {
@@ -146,12 +168,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         H2 titulo = new H2("Buena Vida Medicina Ancestral");
         titulo.addClassName("login-header__title");
 
-        // Subtítulo
-        Paragraph subtitulo = new Paragraph("Rafael Antonio Díaz Sarmiento");
-        subtitulo.addClassName("login-header__subtitle");
+
 
         // Ensamblar texto
-        textoContainer.add(titulo, subtitulo);
+        textoContainer.add(titulo);
 
         // Ensamblar header
         header.add(logo, textoContainer);

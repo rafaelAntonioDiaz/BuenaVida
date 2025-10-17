@@ -303,12 +303,9 @@ public class RegistroView extends VerticalLayout {
         H2 titulo = new H2("Buena Vida Medicina Ancestral");
         titulo.addClassName("login-header__title");
 
-        // Subtítulo
-        Paragraph subtitulo = new Paragraph("Rafael Antonio Díaz Sarmiento");
-        subtitulo.addClassName("login-header__subtitle");
 
         // Ensamblar texto
-        textoContainer.add(titulo, subtitulo);
+        textoContainer.add(titulo);
 
         // Ensamblar header
         header.add(logo, textoContainer);
