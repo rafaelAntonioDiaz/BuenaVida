@@ -11,8 +11,10 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,13 @@ import org.springframework.beans.factory.annotation.Value;
  * Vista principal (Home) - Rafael Antonio Díaz Sarmiento
  * Incluye autenticación, botones sociales, estilos modernos y comentarios explicativos.
  */
-@Route("")
+// --- INICIO DE OPTIMIZACIÓN SEO PARA ESTA VISTA (CORREGIDO) ---
+@Route(value = "", layout = LayoutPrincipal.class)
+// 1. Esta anotación establece el <title> de la página.
+@PageTitle("Acupuntura para Parkinson, Asma y Gota en Bucaramanga | Rafael Díaz")
+// 2. Esta anotación añade la etiqueta <meta name="description"> al <head> de la página.
+@Meta(name = "description", content = "Descubre tratamientos efectivos con medicina ancestral. Ofrezco acupuntura a domicilio en Bucaramanga, Floridablanca y Girón para condiciones como Parkinson, asma, gota y esclerosis múltiple.")
+// --- FIN DE OPTIMIZACIÓN SEO --
 @AnonymousAllowed
 @CssImport("./styles/home-view.css")
 public class HomeView extends VerticalLayout implements BeforeEnterObserver {

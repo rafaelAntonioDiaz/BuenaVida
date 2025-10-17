@@ -2,6 +2,7 @@ package com.ElihuAnalytics.ConsultorioAcupuntura;
 
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -9,11 +10,11 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * Clase principal de configuración de la Shell de Vaadin.
- * Aquí se definen el tema, el PWA y configuraciones relacionadas a la UI.
+ * Aquí se definen el tema, el PWA, los estilos y los metadatos globales para SEO.
  */
 @PWA(
-        name = "Buena Vida Medicina Ancestral Acupuntura",
-        shortName = "ConsultorioApp",
+        name = "Buena Vida Acupuntura",
+        shortName = "Buena Vida",
         description = "Consultorio en el ciberespacio",
         backgroundColor = "#ffffff",
         themeColor = "#4CAF50",
@@ -24,6 +25,13 @@ import com.vaadin.flow.theme.Theme;
 )
 @Theme("consultorio")
 @Push(PushMode.AUTOMATIC)
+
+// --- INICIO DE CONFIGURACIÓN SEO GLOBAL ---
+@Meta(name = "description", content = "Servicio profesional de acupuntura y medicina ancestral a domicilio en Bucaramanga, Floridablanca y Girón. Tratamientos efectivos para diversas dolencias.")
+@Meta(name = "keywords", content = "acupuntura, medicina ancestral, Rafael Antonio Díaz Sarmiento, Bucaramanga, Floridablanca, Girón, Parkinson, asma, gota, esclerosis múltiple")
+@Meta(name = "author", content = "Rafael Antonio Díaz Sarmiento")
+// --- FIN DE CONFIGURACIÓN SEO GLOBAL ---
+
 // Importar estilos globales y específicos de vistas
 @CssImport("./styles/global-theme.css")
 @CssImport("./styles/app-layout.css")
@@ -33,5 +41,5 @@ import com.vaadin.flow.theme.Theme;
 @CssImport("./styles/medico-citas.css")
 @CssImport("./styles/medico-tratamiento.css")
 public class AppShell implements AppShellConfigurator {
-    // Aquí puedes agregar más configuraciones del shell si lo necesitas en el futuro
+    // No se necesita nada más aquí.
 }
