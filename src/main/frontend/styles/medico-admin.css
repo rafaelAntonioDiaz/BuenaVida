@@ -35,10 +35,10 @@
    ============================================ */
 
 .medico-admin-view h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Playfair Display', serif; /* UNIFICAR: misma fuente que HomeView */
   font-size: 2.2rem;
   font-weight: 700;
-  color: white;
+  color: var(--color-primary-dark); /* VERDE oscuro, no blanco */
   margin-bottom: 0.5rem;
   /* Sombra pronunciada para legibilidad */
   text-shadow:
@@ -50,7 +50,7 @@
 .medico-admin-view p {
   font-size: 1.2rem;
   font-weight: 500;
-  color: white;
+  color: var(--color-text-medium); /* Verde medio, no blanco */
   margin-bottom: 2rem;
   /* Sombra para legibilidad */
   text-shadow:

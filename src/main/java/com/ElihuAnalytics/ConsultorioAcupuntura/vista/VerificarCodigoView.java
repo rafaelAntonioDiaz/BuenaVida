@@ -5,6 +5,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Rol;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.UsuarioRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.CodigoVerificacionRepository;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
@@ -63,6 +64,7 @@ public class VerificarCodigoView extends VerticalLayout {
         rolComboBox.setPlaceholder("Seleccione un rol");
 
         Button verificarBtn = new Button("Verificar y Crear Cuenta");
+        verificarBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         verificarBtn.addClickListener(event -> {
             String email = emailField.getValue().trim();

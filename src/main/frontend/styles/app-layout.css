@@ -1,38 +1,37 @@
 /**
  * app-layout.css
- * Estilos para el layout principal y topbar de la aplicación
- * Usa variables definidas en global-theme.css
+ * Layout principal y topbar - Derivado de HomeView
+ * Fondo natural CASI AL MÍNIMO + glass morphism coherente
  */
 
 /* ============================================
-   TOPBAR PRINCIPAL
+   TOPBAR CON FONDO CASI AL MÍNIMO
    ============================================ */
 
 .app-topbar {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lumo-space-s);
-  align-items: right;
+  align-items: center;
   justify-content: space-between;
 
-  /* Fondo con imagen de naturaleza */
-  background: var(--bg-gradient-natural);
-  background-image: url("/images/fondoNaturaleza.jpg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed; /* Efecto parallax suave */
+  /* Fondo natural heredado de HomeView */
+  background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+  background-image: url("/images/fondoNaturaleza.jpg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
 
-  /* Overlay para mejorar legibilidad */
+  /* Posición relativa para el overlay */
   position: relative;
 
-  color: var(--color-text-dark);
   padding: var(--lumo-space-m) var(--lumo-space-l);
-  box-shadow: var(--shadow-md);
   min-height: 60px;
   box-sizing: border-box;
 }
 
-/* Overlay semi-transparente para mejorar contraste */
+/* Overlay glass MÁS OPACO - fondo casi al mínimo */
 .app-topbar::before {
   content: '';
   position: absolute;
@@ -40,8 +39,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(2px);
+  background: rgba(255, 255, 255, 0.7); /* 70% blanco - fondo MUY reducido */
+  backdrop-filter: blur(12px); /* Blur fuerte */
   z-index: 0;
 }
 
@@ -51,43 +50,163 @@
   z-index: 1;
 }
 
-/* Logo/Título del topbar */
+/* ============================================
+   TÍTULO/LOGO DEL TOPBAR - ESTILO HOMEVIEW
+   ============================================ */
+
 .app-topbar h1 {
   margin: 0;
-  color: var(--color-primary-dark);
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  color: var(--color-primary-dark); /* Verde oscuro */
+  font-family: 'Playfair Display', serif; /* UNIFICAR: misma fuente que HomeView */
+  font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  /* Sombra pronunciada para legibilidad */
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
-/* Enlaces de navegación en el topbar */
-.app-topbar a {
-  color: var(--color-text-dark);
-  text-decoration: none;
+/* ============================================
+   SALUDO AL USUARIO - TEXTO VERDE
+   ============================================ */
+
+.app-topbar span {
+  color: var(--color-primary-dark); /* Verde oscuro */
   font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  font-size: 1.1rem;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.app-topbar a:hover {
-  background: var(--bg-overlay-light);
-  color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
+/* ============================================
+   BOTONES DEL TOPBAR - GLASS MORPHISM
+   ============================================ */
 
-/* Botones en el topbar */
 .app-topbar vaadin-button {
-  border-radius: var(--radius-lg);
+  /* Glass morphism coherente con HomeView */
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: var(--color-primary-dark) !important; /* VERDE oscuro */
+  border-radius: 25px;
+  padding: 0.6rem 1.2rem;
   font-weight: 600;
-  transition: all var(--transition-fast);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .app-topbar vaadin-button:hover {
+  background: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+  color: white !important; /* Blanco en hover */
   transform: scale(1.05);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón de cerrar sesión (rojo) */
+.app-topbar vaadin-button[theme~="error"] {
+  background: rgba(220, 53, 69, 0.8) !important;
+  border-color: rgba(220, 53, 69, 0.9) !important;
+  color: white !important; /* Rojo siempre con texto blanco */
+}
+
+.app-topbar vaadin-button[theme~="error"]:hover {
+  background: rgba(200, 35, 51, 0.95) !important;
+  border-color: rgba(200, 35, 51, 1) !important;
+}
+
+/* Botón de notificaciones (warning) */
+.app-topbar vaadin-button[theme~="tertiary-inline"] {
+  min-width: 40px;
+  padding: 0.5rem;
+}
+
+/* ============================================
+   CONTENIDO PRINCIPAL - FONDO NATURAL
+   ============================================ */
+
+main {
+  /* Fondo natural para todas las vistas */
+  background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+  background-image: url("/images/fondoNaturaleza.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  min-height: calc(100vh - 120px);
+  padding: var(--space-responsive);
+}
+
+/* Vista con fondo completo */
+.view-with-background {
+  background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%);
+  background-image: url("/images/fondoNaturaleza.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: var(--lumo-space-xl);
+  position: relative;
+}
+
+/* Overlay muy sutil si se necesita más contraste */
+.view-with-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.05);
+  z-index: 0;
+}
+
+.view-with-background > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   NAVEGACIÓN Y MENÚS (si existen)
+   ============================================ */
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lumo-space-s);
+  padding: var(--lumo-space-m);
+  /* Glass morphism para el menú */
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-menu-item {
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-dark);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.nav-menu-item:hover {
+  background: var(--color-primary);
+  color: white;
+  transform: translateX(4px);
+}
+
+.nav-menu-item.active {
+  background: var(--color-primary-dark);
+  color: white;
+  font-weight: 600;
 }
 
 /* ============================================
@@ -104,125 +223,18 @@
 
   .app-topbar h1 {
     font-size: var(--lumo-font-size-xl);
-    flex-basis: 100%; /* El logo/título ocupa su propia fila */
+    flex-basis: 100%;
   }
 
-  /* En móvil, enlaces y botones toman ancho completo */
-  .app-topbar a,
+  .app-topbar span {
+    font-size: 1rem;
+  }
+
+  /* En móvil, botones ocupan ancho completo */
   .app-topbar vaadin-button {
     width: 100%;
     justify-content: center;
   }
-}
-
-/* ============================================
-   CONTENIDO PRINCIPAL
-   ============================================ */
-
-/* Contenedor principal de vistas */
-main {
-  min-height: calc(100vh - 120px);
-  padding: var(--space-responsive);
-  background: var(--bg-overlay-light);
-}
-
-/* Vista con fondo */
-.view-with-background {
-  background: var(--bg-gradient-natural);
-  background-image: url("/images/fondoNaturaleza.jpg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  min-height: 100vh;
-  padding: var(--lumo-space-xl);
-  position: relative;
-}
-
-.view-with-background::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.85);
-  z-index: 0;
-}
-
-.view-with-background > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ============================================
-   NAVEGACIÓN Y MENÚS
-   ============================================ */
-
-/* Menú de navegación lateral (si existe) */
-.nav-menu {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lumo-space-s);
-  padding: var(--lumo-space-m);
-  background: var(--bg-card-glass);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.nav-menu-item {
-  padding: var(--lumo-space-s) var(--lumo-space-m);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-dark);
-  text-decoration: none;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-}
-
-.nav-menu-item:hover {
-  background: var(--color-primary);
-  color: white;
-  transform: translateX(4px);
-}
-
-.nav-menu-item.active {
-  background: var(--color-primary-dark);
-  color: white;
-  font-weight: 600;
-}
-
-/* ============================================
-   FOOTER (si existe)
-   ============================================ */
-
-footer {
-  padding: var(--lumo-space-l);
-  background: var(--color-text-dark);
-  color: white;
-  text-align: center;
-  margin-top: auto;
-}
-
-footer a {
-  color: var(--color-primary-hover);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-footer a:hover {
-  color: white;
-  text-decoration: underline;
-}
-/* ============================================
-   FIX: Mantener botones visibles en pantallas pequeñas
-   ============================================ */
-
-.app-topbar {
-  flex-wrap: wrap; /* Asegura que los elementos se apilen si no hay espacio */
-}
-
-.app-topbar vaadin-button {
-  min-width: fit-content;
-  white-space: nowrap;
 }
 
 @media (max-width: 600px) {
@@ -238,10 +250,36 @@ footer a:hover {
     text-align: center;
   }
 
-  /* El botón de cerrar sesión se mantiene visible y centrado */
+  /* Botón de cerrar sesión centrado en móvil */
   .app-topbar vaadin-button:last-child {
-      align-items: right;
-
     margin-top: 0.5rem;
   }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+.app-topbar {
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   ACCESIBILIDAD
+   ============================================ */
+
+.app-topbar vaadin-button:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
 }

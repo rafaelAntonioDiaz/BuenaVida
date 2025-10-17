@@ -109,6 +109,10 @@ public class PacienteView extends VerticalLayout {
         perfil.addClassName("card");
         perfil.getElement().getStyle().set("grid-area", "profile");
 
+        Component estados = new EstadosSaludCard(hc, historiaClinicaService, fileStorageService);
+        estados.addClassName("card");
+        estados.getElement().getStyle().set("grid-area", "estados");
+
         Component planClinico = new PlanClinicoCard(hc);
         planClinico.addClassName("card");
         planClinico.getElement().getStyle().set("grid-area", "planClinico");
@@ -117,16 +121,12 @@ public class PacienteView extends VerticalLayout {
         agenda.addClassName("card");
         agenda.getElement().getStyle().set("grid-area", "schedule");
 
-        Component estados = new EstadosSaludCard(hc, historiaClinicaService, fileStorageService);
-        estados.addClassName("card");
-        estados.getElement().getStyle().set("grid-area", "estados");
-
         Component antecedentes = new AntecedentesCard(hc, historiaClinicaService, fileStorageService);
         antecedentes.addClassName("card");
         antecedentes.getElement().getStyle().set("grid-area", "antecedentes");
 
         // Añadir solo las cards al grid (SIN el botón)
-        grid.add(bienvenida, perfil, planClinico, agenda, estados, antecedentes);
+        grid.add(bienvenida, perfil, estados, planClinico, agenda, antecedentes);
 
         VerticalLayout wrapper = new VerticalLayout(solicitarPermisoNotificaciones, grid);
         wrapper.setWidthFull();

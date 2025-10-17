@@ -128,7 +128,7 @@ public class AntecedentesCard extends Div {
         guardar.addThemeVariants(ButtonVariant.LUMO_SMALL);
 
         Button cancelar = new Button("Cancelar", e -> dlg.close());
-        cancelar.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+        cancelar.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
 
         HorizontalLayout footer = new HorizontalLayout(guardar, cancelar);
         footer.setWidthFull();

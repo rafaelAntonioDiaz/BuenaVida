@@ -23,15 +23,15 @@ public class BienvenidaCard extends Div {
         titulo.getStyle()
                 .set("margin", "0")
                 .set("margin-bottom", "var(--lumo-space-s)")
-                .set("color", "white"); // Asegurar que sea blanco
+                .set("color", "#2e3d34"); // Verde oscuro para buen contraste
 
         // Texto descriptivo
         Paragraph texto = new Paragraph(
-                "Aquí puedes programar sesiones, reportar tu estado de salud y gestionar tus antecedentes relevantes."
+                "Aquí puedes programar sesiones, reportar tu estado de salud y guardar tus antecedentes relevantes como imagenes diagnósticas y exámenes."
         );
         texto.getStyle()
                 .set("margin", "0")
-                .set("color", "rgba(255, 255, 255, 0.95)") // Blanco semi-transparente
+                .set("color", "#616161") // Blanco semi-transparente
                 .set("line-height", "1.6");
 
         // Ensamblar

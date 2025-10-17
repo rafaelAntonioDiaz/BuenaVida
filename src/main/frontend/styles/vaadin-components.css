@@ -12,7 +12,7 @@
 vaadin-button,
 vaadin-button[theme~="primary"] {
   background-color: var(--color-primary, #499300);
-  color: white;
+  color: --color-text-dark;
   border-radius: var(--radius-lg, 25px);
   font-weight: 600;
   border: none;
@@ -30,7 +30,7 @@ vaadin-button:hover {
 vaadin-button[theme~="secondary"],
 vaadin-button[theme~="tertiary"] {
   background: transparent;
-  color: var(--color-secondary, #2e7d32);
+  color: --color-text-dark;
   border: 2px solid var(--color-secondary, #2e7d32);
   border-radius: var(--radius-lg);
 }
@@ -38,7 +38,7 @@ vaadin-button[theme~="tertiary"] {
 vaadin-button[theme~="secondary"]:hover,
 vaadin-button[theme~="tertiary"]:hover {
   background-color: var(--color-primary-hover);
-  color: white;
+  color: --color-text-dark;
 }
 
 /* Botones de error */

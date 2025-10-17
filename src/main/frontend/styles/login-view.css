@@ -368,16 +368,3 @@
     transform: translateY(0);
   }
 }
-/* FIX TEMPORAL - Forzar transparencia total */
-* {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Excepto la card y los inputs */
-.login-card,
-.login-card vaadin-text-field::part(input-field),
-.login-card vaadin-email-field::part(input-field),
-.login-card vaadin-password-field::part(input-field) {
-  background: rgba(255, 255, 255, 0.25) !important;
-}

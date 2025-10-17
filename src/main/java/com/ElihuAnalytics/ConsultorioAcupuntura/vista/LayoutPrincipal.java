@@ -63,7 +63,7 @@ public class LayoutPrincipal extends AppLayout {
         // === Saludo al usuario ===
         Span nombreUsuario = new Span();
         auth.getUsuarioAutenticado().ifPresent(usuario -> {
-            nombreUsuario.setText("¡Qué gusto " + usuario.getNombres() + "!");
+            nombreUsuario.setText("Hola " + usuario.getNombres() + "!");
         });
         nombreUsuario.getStyle()
                 .set("flex-grow", "1") // ocupa el espacio central
