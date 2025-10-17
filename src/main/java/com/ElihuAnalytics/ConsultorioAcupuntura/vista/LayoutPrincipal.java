@@ -95,7 +95,7 @@ public class LayoutPrincipal extends AppLayout {
             auth.logout();
             UI.getCurrent().getPage().setLocation("/logout");
         });
-        logout.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        logout.addThemeVariants(ButtonVariant.LUMO_ERROR);
         logout.getStyle()
                 .set("white-space", "nowrap") // evita que se rompa la línea
                 .set("min-width", "fit-content");
