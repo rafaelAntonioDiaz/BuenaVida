@@ -11,7 +11,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Meta;
+// import com.vaadin.flow.component.page.Meta; // <-- ELIMINADO
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -24,13 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
  * Vista principal (Home) - Rafael Antonio Díaz Sarmiento
  * Incluye autenticación, botones sociales, estilos modernos y comentarios explicativos.
  */
-// --- INICIO DE OPTIMIZACIÓN SEO PARA ESTA VISTA (CORREGIDO) ---
 @Route(value = "", layout = LayoutPrincipal.class)
-// 1. Esta anotación establece el <title> de la página.
 @PageTitle("Acupuntura para Parkinson, Asma y Gota en Bucaramanga | Rafael Díaz")
-// 2. Esta anotación añade la etiqueta <meta name="description"> al <head> de la página.
-@Meta(name = "description", content = "Descubre tratamientos efectivos con medicina ancestral. Ofrezco acupuntura a domicilio en Bucaramanga, Floridablanca y Girón para condiciones como Parkinson, asma, gota y esclerosis múltiple.")
-// --- FIN DE OPTIMIZACIÓN SEO --
+// --- ANOTACIÓN @Meta ELIMINADA DE AQUÍ PARA EVITAR EL CRASH ---
 @AnonymousAllowed
 @CssImport("./styles/home-view.css")
 public class HomeView extends VerticalLayout implements BeforeEnterObserver {
@@ -40,18 +36,18 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
 
     public HomeView(@Autowired AutenticacionServicio auth,
                     @Value("${app.share.url}") String appUrl) {
+
+        // ... (Tu constructor original se mantiene intacto) ...
+
         this.auth = auth;
         this.appUrl = appUrl;
 
-        // Dentro del constructor de HomeView, después de setSizeFull():
         addClassName("home-view");
         setSizeFull();
-// Forzar fondo transparente en el contenedor raíz
         getStyle()
                 .set("background", "transparent")
                 .set("background-color", "transparent");
 
-// Asegura por código que el host HTML tenga min-height:100vh (fallback)
         getElement().getStyle().set("min-height", "100vh");
 
         setAlignItems(Alignment.CENTER);
@@ -83,6 +79,8 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         add(logo, titulo, intro, botones, socialButtons);
     }
 
+    // ... (Tus métodos crearBotonesCompartir y crearBotonSocial se mantienen intactos) ...
+
     private HorizontalLayout crearBotonesCompartir() {
         Button fb = crearBotonSocial(VaadinIcon.FACEBOOK.create(), "facebook", "https://www.facebook.com/sharer/sharer.php?u=" + appUrl);
         Button tw = crearBotonSocial(VaadinIcon.TWITTER.create(), "twitter", "https://twitter.com/intent/tweet?url=" + appUrl);
@@ -107,8 +105,29 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         return btn;
     }
 
+
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+
+        // --- INICIO DE LA SOLUCIÓN DEFINITIVA (VÍA JAVASCRIPT) ---
+        // 1. Define el contenido de la descripción
+        String descriptionContent = "Descubre tratamientos efectivos con medicina ancestral. Ofrezco acupuntura a domicilio en Bucaramanga, Floridablanca y Girón para condiciones como Parkinson, asma, gota y esclerosis múltiple.";
+
+        // 2. Define el script que busca, crea o actualiza la etiqueta meta
+        String script = "let meta = document.querySelector('meta[name=\"description\"]');" +
+                "if (!meta) {" +
+                "  meta = document.createElement('meta');" +
+                "  meta.setAttribute('name', 'description');" +
+                "  document.head.appendChild(meta);" +
+                "}" +
+                "meta.setAttribute('content', $0);";
+
+        // 3. Ejecuta el script de forma segura
+        event.getUI().getPage().executeJs(script, descriptionContent);
+        // --- FIN DE LA SOLUCIÓN ---
+
+
+        // --- Tu lógica de autenticación original se mantiene intacta ---
         var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()
                 && !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
@@ -122,5 +141,4 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
             if (!route.isEmpty()) event.forwardTo(route);
         }
     }
-
 }
