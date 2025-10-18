@@ -4,7 +4,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.router.PageTitle; // <-- IMPORTACIÓN AÑADIDA
+import com.vaadin.flow.router.PageTitle; // <-- Importación Requerida
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.Theme;
@@ -28,15 +28,15 @@ import com.vaadin.flow.theme.Theme;
 @Push(PushMode.AUTOMATIC)
 
 // --- INICIO DE CONFIGURACIÓN SEO GLOBAL ---
-// Establece el TÍTULO global por defecto (esta es la línea clave añadida)
+// Establece el TÍTULO global por defecto
 @PageTitle("Acupuntura a Domicilio en Bucaramanga | Rafael Díaz Sarmiento")
-// Tu configuración de Metadatos (ya estaba correcta)
+// Establece la DESCRIPCIÓN global por defecto
 @Meta(name = "description", content = "Servicio profesional de acupuntura y medicina ancestral a domicilio en Bucaramanga, Floridablanca y Girón. Tratamientos efectivos para diversas dolencias.")
 @Meta(name = "keywords", content = "acupuntura, medicina ancestral, Rafael Antonio Díaz Sarmiento, Bucaramanga, Floridablanca, Girón, Parkinson, asma, gota, esclerosis múltiple")
 @Meta(name = "author", content = "Rafael Antonio Díaz Sarmiento")
 // --- FIN DE CONFIGURACIÓN SEO GLOBAL ---
 
-// Tus importaciones de estilos (ya estaban correctas)
+// Importar estilos globales y específicos de vistas
 @CssImport("./styles/global-theme.css")
 @CssImport("./styles/app-layout.css")
 @CssImport("./styles/home-view.css")

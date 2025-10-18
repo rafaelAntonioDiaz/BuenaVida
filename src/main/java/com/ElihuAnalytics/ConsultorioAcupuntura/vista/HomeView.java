@@ -11,7 +11,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-// import com.vaadin.flow.component.page.Meta; // <-- ELIMINADO
+// import com.vaadin.flow.component.page.Meta; // <-- ELIMINADO: Import innecesario
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -36,8 +36,6 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
 
     public HomeView(@Autowired AutenticacionServicio auth,
                     @Value("${app.share.url}") String appUrl) {
-
-        // ... (Tu constructor original se mantiene intacto) ...
 
         this.auth = auth;
         this.appUrl = appUrl;
@@ -79,8 +77,6 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         add(logo, titulo, intro, botones, socialButtons);
     }
 
-    // ... (Tus métodos crearBotonesCompartir y crearBotonSocial se mantienen intactos) ...
-
     private HorizontalLayout crearBotonesCompartir() {
         Button fb = crearBotonSocial(VaadinIcon.FACEBOOK.create(), "facebook", "https://www.facebook.com/sharer/sharer.php?u=" + appUrl);
         Button tw = crearBotonSocial(VaadinIcon.TWITTER.create(), "twitter", "https://twitter.com/intent/tweet?url=" + appUrl);
@@ -109,7 +105,7 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
 
-        // --- INICIO DE LA SOLUCIÓN DEFINITIVA (VÍA JAVASCRIPT) ---
+        // --- INICIO DE LA SOLUCIÓN CORRECTA (VÍA JAVASCRIPT) ---
         // 1. Define el contenido de la descripción
         String descriptionContent = "Descubre tratamientos efectivos con medicina ancestral. Ofrezco acupuntura a domicilio en Bucaramanga, Floridablanca y Girón para condiciones como Parkinson, asma, gota y esclerosis múltiple.";
 
@@ -122,7 +118,7 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
                 "}" +
                 "meta.setAttribute('content', $0);";
 
-        // 3. Ejecuta el script de forma segura
+        // 3. Ejecuta el script de forma segura. Este método SÍ existe.
         event.getUI().getPage().executeJs(script, descriptionContent);
         // --- FIN DE LA SOLUCIÓN ---
 
