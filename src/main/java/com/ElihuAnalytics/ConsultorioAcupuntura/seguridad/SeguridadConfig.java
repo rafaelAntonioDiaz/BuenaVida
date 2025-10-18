@@ -1,5 +1,7 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.seguridad;
 
+// Importamos la clase que faltaba en tu código original
+import com.ElihuAnalytics.ConsultorioAcupuntura.seguridad.UsuarioDetallesServicio;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +51,7 @@ public class SeguridadConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                // No recordar la última URL protegida (evita “volver” a rutas 403 al cambiar de rol)
+                // No recordar la última URL protegida
                 .requestCache(c -> c.requestCache(new NullRequestCache()))
                 // Migrar la sesión al autenticarse
                 .sessionManagement(sm -> sm.sessionFixation(sf -> sf.migrateSession()))
@@ -58,7 +60,7 @@ public class SeguridadConfig extends VaadinWebSecurity {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers(new RegexRequestMatcher("^/login$", "POST"))
                 )
-                // Autorización por rutas (sin anyRequest)
+                // Autorización por rutas
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/registro", "/verificar", "/login",
@@ -66,14 +68,15 @@ public class SeguridadConfig extends VaadinWebSecurity {
                                 "/images/**", "/icons/**", "/favicon.ico",
                                 "/VAADIN/**", "/frontend/**", "/webjars/**", "/line-awesome/**",
                                 "/styles/**", "/manifest.webmanifest", "/sw.js", "/offline.html",
-                                "/files/**"
+                                "/files/**",
+                                "/sitemap.xml"
                         ).permitAll()
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/medico", "/medico/**").hasAnyRole("MEDICO", "ADMINISTRADOR")
                         .requestMatchers("/paciente", "/paciente/**").hasRole("PACIENTE")
                 )
                 .logout(logout -> logout
-                        // Permitir logout también por GET sin usar clases deprecadas
+                        // Permitir logout también por GET
                         .logoutRequestMatcher(new RegexRequestMatcher("^/logout$", "GET"))
                         // Mantener compatibilidad con POST /logout
                         .logoutUrl("/logout")
@@ -82,7 +85,7 @@ public class SeguridadConfig extends VaadinWebSecurity {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
-                // Evitar que el navegador muestre páginas protegidas desde caché tras logout
+                // Evitar caché de páginas protegidas
                 .headers(headers -> headers.cacheControl(org.springframework.security.config.Customizer.withDefaults()));
 
         // Integración Vaadin + página de login y success handler
