@@ -19,10 +19,10 @@ import com.vaadin.flow.theme.Theme;
         description = "Consultorio en el ciberespacio",
         backgroundColor = "#ffffff",
         themeColor = "#4CAF50",
-        iconPath = "icons/icon.png",
+        iconPath = "images/fondoNaturaleza-soft.png", // Ruta al ícono de la aplicación
         manifestPath = "manifest.webmanifest",
         offlinePath = "offline.html",
-        offlineResources = { "images/offline.png" }
+        offlineResources = { "images/fondoNaturaleza-soft.png" }
 )
 @Theme("consultorio")
 @Push(PushMode.AUTOMATIC)

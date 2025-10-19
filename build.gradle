@@ -45,6 +45,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation enforcedPlatform('com.vaadin:vaadin-bom:24.8.4')
     implementation 'com.vaadin:vaadin-spring-boot-starter:24.8.4'
+    implementation 'com.vaadin:vaadin-rich-text-editor-flow'
     implementation 'com.sendgrid:sendgrid-java:4.10.2'
     implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
         exclude group: 'org.neo4j'

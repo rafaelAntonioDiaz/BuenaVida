@@ -132,7 +132,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
          * BOTÓN DE REGISTRO
          * ===================================================== */
         Button registroBtn = new Button("¿No tienes cuenta? Regístrate",
-                e -> UI.getCurrent().navigate("registro"));
+                e -> UI.getCurrent().navigate(""));
         registroBtn.addClassName("registro-btn");
 
         /* =====================================================

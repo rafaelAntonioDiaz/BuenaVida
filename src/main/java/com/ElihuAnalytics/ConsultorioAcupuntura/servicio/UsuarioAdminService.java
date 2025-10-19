@@ -9,6 +9,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List; // <-- IMPORTA LIST
+import java.util.Optional; // <-- IMPORTA OPTIONAL
+import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Rol;
+
 @Service
 public class UsuarioAdminService {
 
@@ -40,4 +44,39 @@ public class UsuarioAdminService {
                 apellidos);
         return usuarioRepository.save(admin);
     }
+
+    // --- INICIO DE LOS MÉTODOS AÑADIDOS ---
+
+    /**
+     * Lista todos los usuarios en el sistema.
+     * Necesario para el Grid de administración.
+     * @return Lista de todos los usuarios.
+     */
+    @Transactional(readOnly = true)
+    public List<Usuario> listarTodosLosUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    /**
+     * Cambia el rol de un usuario específico.
+     * Necesario para los botones de "Hacer Médico" / "Hacer Paciente".
+     * @param usuarioId El ID del usuario a modificar.
+     * @param nuevoRol El nuevo Rol a asignar.
+     */
+    @Transactional
+    public void cambiarRol(Long usuarioId, Rol nuevoRol) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            // Evita cambiar el rol de un Administrador por seguridad
+            if (usuario.getRol() != Rol.ADMINISTRADOR) {
+                usuario.setRol(nuevoRol);
+                usuarioRepository.save(usuario);
+            }
+        } else {
+            // Manejar el caso de usuario no encontrado, si es necesario
+            throw new RuntimeException("Usuario no encontrado con ID: " + usuarioId);
+        }
+    }
+    // --- FIN DE LOS MÉTODOS AÑADIDOS ---
 }

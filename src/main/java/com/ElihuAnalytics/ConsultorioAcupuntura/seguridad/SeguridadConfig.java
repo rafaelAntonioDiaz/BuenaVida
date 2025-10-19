@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler; // Nuevo import para el handler de logout
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler; // Nuevo import para handler de limpieza de contexto
 import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
@@ -48,6 +50,18 @@ public class SeguridadConfig extends VaadinWebSecurity {
         };
     }
 
+    // Bean ajustado: Handler personalizado para éxito de logout.
+    // Agregamos una limpieza explícita del contexto de seguridad antes del redirect para evitar que Vaadin recargue en login debido a remanentes de sesión.
+    @Bean
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        return (request, response, authentication) -> {
+            if (authentication != null) {
+                new SecurityContextLogoutHandler().logout(request, response, authentication); // Limpieza profunda del contexto de seguridad para prevenir redirecciones residuales a login.
+            }
+            response.sendRedirect("/"); // Redirige directamente a la ruta raíz (HomeView).
+        };
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -71,7 +85,7 @@ public class SeguridadConfig extends VaadinWebSecurity {
                                 "/files/**",
                                 "/sitemap.xml"
                         ).permitAll()
-                        .requestMatchers("/admin", "/admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/admin", "/admin/**").hasAnyRole("ADMINISTRADOR", "MEDICO")
                         .requestMatchers("/medico", "/medico/**").hasAnyRole("MEDICO", "ADMINISTRADOR")
                         .requestMatchers("/paciente", "/paciente/**").hasRole("PACIENTE")
                 )
@@ -80,7 +94,8 @@ public class SeguridadConfig extends VaadinWebSecurity {
                         .logoutRequestMatcher(new RegexRequestMatcher("^/logout$", "GET"))
                         // Mantener compatibilidad con POST /logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
+                        // Usar el handler personalizado para forzar la redirección limpia.
+                        .logoutSuccessHandler(logoutSuccessHandler())
                         .clearAuthentication(true)
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
@@ -91,10 +106,9 @@ public class SeguridadConfig extends VaadinWebSecurity {
         // Integración Vaadin + página de login y success handler
         super.configure(http);
 
-        setLoginView(http, "login");
+        setLoginView(http, "login", "/"); // Cambio clave: Agrega el tercer parámetro "/" para especificar la URL de éxito de logout, evitando el default a login y respetando tu handler personalizado.
         http.formLogin(form -> form.successHandler(roleBasedSuccessHandler()));
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -274,3 +274,91 @@
     transform: translateY(0);
   }
 }
+/* ============================================
+   SECCIÓN DE BLOG (NUEVO)
+   ============================================ */
+
+.blog-section {
+  width: 100%;
+  max-width: 1200px; /* Ancho máximo para la sección de blog */
+  margin-top: var(--lumo-space-xl);
+  padding: var(--lumo-space-l);
+
+  /* Usamos el mismo efecto "glass" de las tarjetas de login */
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.blog-section-title {
+  /* Título de la sección en verde oscuro */
+  color: var(--color-primary-dark, #205c3b) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  font-size: var(--lumo-font-size-xxl);
+  margin-bottom: var(--lumo-space-l);
+}
+
+.blog-card-container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que las tarjetas bajen en móviles */
+  justify-content: center;
+  gap: var(--lumo-space-l); /* Espacio entre tarjetas */
+  width: 100%;
+}
+
+.blog-card {
+  /* Usamos las variables de global-theme.css para las tarjetas */
+  background: var(--bg-card-glass, rgba(255, 255, 255, 0.92));
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.15));
+
+  /* Tamaño y transición */
+  flex-basis: 320px; /* Ancho base de cada tarjeta */
+  flex-grow: 1;
+  max-width: 400px;
+  min-height: 200px;
+  padding: var(--lumo-space-m);
+  transition: all var(--transition-medium, 0.3s ease);
+}
+
+.blog-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.2));
+}
+
+.blog-card-categoria {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary, #499300);
+  text-transform: uppercase;
+  margin-bottom: var(--lumo-space-s);
+}
+
+.blog-card-titulo {
+  font-size: 1.25rem;
+  color: var(--color-primary-dark, #205c3b);
+  margin-bottom: var(--lumo-space-m);
+  line-height: 1.3;
+}
+
+.blog-card-resumen {
+  color: var(--color-text-medium, #3e4c42);
+  line-height: 1.5;
+  flex-grow: 1; /* Empuja el link hacia abajo */
+  margin-bottom: var(--lumo-space-m);
+}
+
+.blog-card-link {
+  font-weight: 600;
+  color: var(--color-secondary, #2e7d32);
+  text-decoration: none;
+  transition: all var(--transition-fast, 0.2s ease);
+}
+
+.blog-card-link:hover {
+  color: var(--color-primary-hover, #83C100);
+  text-decoration: underline;
+}

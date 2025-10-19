@@ -170,7 +170,7 @@ public class RegistroView extends VerticalLayout {
                 .set("margin-top", "0.5rem");
 
         Button volverBtn = new Button("¿Ya tienes cuenta? Inicia sesión",
-                e -> UI.getCurrent().navigate("login"));
+                e -> UI.getCurrent().navigate(""));
         volverBtn.setWidthFull();
         volverBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         volverBtn.addClassName("registro-btn");
@@ -248,7 +248,7 @@ public class RegistroView extends VerticalLayout {
 
                 Notification.show("¡Registro exitoso! Bienvenido/a " + p.getNombres(),
                         4000, Notification.Position.MIDDLE);
-                UI.getCurrent().navigate("login");
+                UI.getCurrent().navigate("");
 
             } catch (Exception ex) {
                 logger.error("Error en registro: {}", ex.getMessage());

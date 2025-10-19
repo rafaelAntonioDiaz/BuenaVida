@@ -1,0 +1,60 @@
+/* ============================================
+   ESTILOS PARA EL CONTENIDO DEL BLOG
+   ============================================ */
+
+.blog-contenido {
+    /* Estilos base para el texto */
+    color: var(--color-text-dark, #2e3d34);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    width: 100%; /* Asegura que ocupe el ancho del contenedor */
+}
+
+/* Estilos para elementos comunes generados por RichTextEditor */
+.blog-contenido p {
+    margin-bottom: var(--lumo-space-m);
+}
+
+.blog-contenido h1,
+.blog-contenido h2,
+.blog-contenido h3,
+.blog-contenido h4 {
+    color: var(--color-primary-dark, #205c3b);
+    margin-top: var(--lumo-space-l);
+    margin-bottom: var(--lumo-space-s);
+}
+
+.blog-contenido ul,
+.blog-contenido ol {
+    margin-left: var(--lumo-space-l);
+    margin-bottom: var(--lumo-space-m);
+}
+
+.blog-contenido li {
+    margin-bottom: var(--lumo-space-xs);
+}
+
+.blog-contenido a {
+    color: var(--color-secondary, #2e7d32);
+    text-decoration: underline;
+}
+
+.blog-contenido a:hover {
+    color: var(--color-primary-hover, #83C100);
+}
+
+.blog-contenido blockquote {
+    border-left: 4px solid var(--color-primary, #499300);
+    padding-left: var(--lumo-space-m);
+    margin: var(--lumo-space-l) 0;
+    font-style: italic;
+    color: var(--color-text-medium, #3e4c42);
+}
+
+.blog-contenido pre { /* Para bloques de código, si los usas */
+    background-color: var(--lumo-contrast-5pct);
+    padding: var(--lumo-space-m);
+    border-radius: var(--radius-sm);
+    overflow-x: auto; /* Scroll horizontal si el código es largo */
+    font-family: monospace;
+}

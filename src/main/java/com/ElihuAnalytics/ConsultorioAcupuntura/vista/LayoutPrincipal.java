@@ -93,7 +93,7 @@ public class LayoutPrincipal extends AppLayout {
         // --- Botón de cerrar sesión ---
         Button logout = new Button("Cerrar sesión", e -> {
             auth.logout();
-            UI.getCurrent().getPage().setLocation("/logout");
+            UI.getCurrent().getPage().setLocation("/");
         });
         logout.addThemeVariants(ButtonVariant.LUMO_ERROR);
         logout.getStyle()

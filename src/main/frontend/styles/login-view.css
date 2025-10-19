@@ -77,9 +77,12 @@
 
 .login-header__title,
 .login-header__subtitle {
-  /* Texto blanco con sombra para legibilidad */
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+ /* --- INICIO DE LA CORRECCIÓN --- */
+   /* Texto Verde Oscuro, usando la variable de global-theme.css */
+   color: var(--color-primary-dark, #205c3b) !important;
+   /* Sombra clara para mejor contraste sobre el fondo "glass" */
+   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+   /* --- FIN DE LA CORRECCIÓN --- */
   margin: 0;
   line-height: 1.2;
 }
@@ -102,9 +105,12 @@
 }
 
 .login-card h1 {
-  /* Título de la tarjeta: blanco con sombra */
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+ /* --- INICIO DE LA CORRECCIÓN --- */
+   /* Título de la tarjeta: FIX: Verde Oscuro */
+   color: var(--color-primary-dark, #205c3b) !important;
+   /* Quitamos la sombra oscura que ya no aporta */
+   text-shadow: none;
+   /* --- FIN DE LA CORRECCIÓN --- */
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
@@ -119,13 +125,14 @@
 }
 
 /* ============================================
-   CAMPOS DE TEXTO - FIX COMPLETO Y FINAL
+   CAMPOS DE TEXTO - FIX: Transparencia, Borde Verde y TEXTO OSCURO
    ============================================ */
 
-/* 1. Anular el fondo blanco de Lumo para todos los campos */
+/* 1. Anular el fondo blanco de Lumo (Sin cambios) */
 .login-card vaadin-text-field,
 .login-card vaadin-email-field,
 .login-card vaadin-password-field {
+    /* Variables para forzar transparencia */
     --lumo-contrast-5pct: transparent !important;
     --lumo-input-field-background-color: transparent !important;
     --lumo-field-background-color: transparent !important;
@@ -133,38 +140,48 @@
     margin-bottom: 0.5rem;
 }
 
-/* 2. Estilos para el área de entrada (donde se escribe) */
+/* 2. Aplicar estilos de cristal (Borde Verde, Texto OSCURO) al área de entrada */
 .login-card vaadin-text-field::part(input-field),
 .login-card vaadin-email-field::part(input-field),
 .login-card vaadin-password-field::part(input-field) {
+    /* Sobrescribir el fondo para transparencia */
     background-color: transparent !important;
+
+    /* Aplicar Borde Verde (color primario) */
     border: 2px solid var(--color-primary) !important;
     border-radius: var(--lumo-border-radius-m);
     padding: var(--lumo-space-xs) var(--lumo-space-s);
 
-    /* El texto que escribe el usuario sigue siendo blanco para contrastar con el borde */
-    color: white !important;
+
+    /* ==================================================================
+       INICIO DE LA CORRECCIÓN
+       ================================================================== */
+
+    /* FIX CRÍTICO: Asegurar que el texto de entrada sea OSCURO para contraste */
+    /* Cambiamos 'white' por una variable de texto oscuro o un color de respaldo (ej. gris oscuro) */
+    color: var(--color-text-dark, #2E4053) !important;
+
+    /* FIX CRÍTICO: Placeholder text (texto de ayuda grisáceo) */
+    /* Cambiamos el color blanco transparente por un color oscuro y semitransparente */
+    --lumo-secondary-text-color: var(--color-text-medium, #5D6D7E) !important;
+
+    /* ==================================================================
+       FIN DE LA CORRECCIÓN
+       ================================================================== */
 }
 
-/* 3. FIX CRÍTICO: Placeholder visible */
-.login-card vaadin-text-field::part(input-field)::placeholder,
-.login-card vaadin-email-field::part(input-field)::placeholder,
-.login-card vaadin-password-field::part(input-field)::placeholder {
-  /* Usamos un color gris medio, más claro que la etiqueta pero visible */
-  color: var(--color-text-medium, #85929E) !important;
-  opacity: 1; /* Aseguramos que no esté transparente */
-}
-
-/* 4. Etiquetas de los campos (Label) - OSCURO para alto contraste */
+/* 3. Etiquetas de los campos (Label) - FIX: Verde Oscuro y Limpio */
 .login-card vaadin-text-field::part(label),
 .login-card vaadin-email-field::part(label),
 .login-card vaadin-password-field::part(label) {
-  color: var(--color-text-dark, #2E4053) !important;
+  /* Usamos un color verde oscuro (o el texto oscuro de la paleta) */
+  color: var(--color-text-dark, #2e3d34) !important;
   font-weight: 600;
+  /* Quitamos la sombra, ya no es necesaria */
   text-shadow: none;
 }
 
-/* 5. Mejorar el estado de Focus (cuando se hace clic en el campo) */
+/* 4. Mejorar el estado de Focus (Sin cambios) */
 .login-card vaadin-text-field:focus-within::part(input-field),
 .login-card vaadin-email-field:focus-within::part(input-field),
 .login-card vaadin-password-field:focus-within::part(input-field) {
