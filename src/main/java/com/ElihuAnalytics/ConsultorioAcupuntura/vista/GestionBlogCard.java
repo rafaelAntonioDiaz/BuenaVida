@@ -11,7 +11,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.richtexteditor.RichTextEditor;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class GestionBlogCard extends VerticalLayout {
     private TextField tituloBlog = new TextField("Título");
     private TextField slug = new TextField("Slug (URL)");
     private TextField categoria = new TextField("Categoría");
-    private RichTextEditor contenido = new RichTextEditor();
+    private TextArea contenido = new TextArea("contenido");
     private Button guardarBtn = new Button("Guardar Artículo");
     private Button limpiarBtn = new Button("Nuevo Artículo", VaadinIcon.PLUS.create());
 
@@ -50,13 +50,20 @@ public class GestionBlogCard extends VerticalLayout {
 
         VerticalLayout editorForm = new VerticalLayout();
         editorForm.setPadding(false);
-        contenido.addClassName("blog-editor-contenido");
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Darle altura al TextArea
+        contenido.setWidthFull();
+        contenido.setMinHeight("400px"); // Puedes ajustar esta altura
+        contenido.getStyle().set("resize", "vertical"); // Permite redimensionar verticalmente
+        // Ya no necesitamos la clase CSS 'blog-editor-contenido'
+        // --- FIN DE LA CORRECCIÓN ---
+
         tituloBlog.addValueChangeListener(e -> {
             if (binderBlog.getBean() != null && binderBlog.getBean().getId() == null) {
                 slug.setValue(BlogArticuloService.generarSlug(e.getValue()));
             }
         });
-        editorForm.add(tituloBlog, slug, categoria, contenido);
+        editorForm.add(tituloBlog, slug, categoria, contenido); // Añadimos el TextArea
 
         HorizontalLayout botonesLayout = new HorizontalLayout(guardarBtn, limpiarBtn);
         guardarBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -67,7 +74,7 @@ public class GestionBlogCard extends VerticalLayout {
 
         add(tituloCard, gridBlog, editorForm, botonesLayout);
         setWidthFull();
-        setVisible(false); // Oculto por defecto
+        setVisible(false);
     }
 
     private void configurarGridBlog() {

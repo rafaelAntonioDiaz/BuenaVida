@@ -4,7 +4,6 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.BlogArticulo; // <-- IMPO
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.BlogArticuloService; // <-- IMPORTAR SERVICIO
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Div; // <-- IMPORTAR DIV
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
@@ -12,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.NotFoundException; // <-- IMPORTAR NOTFOUND
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Autowired; // <-- IMPORTAR AUTOWIRED
@@ -33,7 +31,7 @@ public class BlogArticuloView extends VerticalLayout implements BeforeEnterObser
 
     private H1 titulo = new H1();
     // Usamos Div para poder renderizar HTML del RichTextEditor
-    private Div contenidoHtml = new Div();
+    private Paragraph contenidoTexto = new Paragraph();
     private Image imagenHeader = new Image(); // (Opcional, si guardas imágenes)
 
     // Contenedor principal del artículo
@@ -67,9 +65,9 @@ public class BlogArticuloView extends VerticalLayout implements BeforeEnterObser
         imagenHeader.setVisible(false); // Ocultar si no hay imagen
 
         // Estilo para el contenido HTML
-        contenidoHtml.addClassName("blog-contenido");
+        contenidoTexto.addClassName("blog-contenido");
 
-        contenedorArticulo.add(titulo, imagenHeader, contenidoHtml);
+        contenedorArticulo.add(titulo, imagenHeader, contenidoTexto);
         add(contenedorArticulo);
     }
 
@@ -88,7 +86,7 @@ public class BlogArticuloView extends VerticalLayout implements BeforeEnterObser
             // 1. Actualizar UI
             titulo.setText(articulo.getTitulo());
             // ¡IMPORTANTE! Usamos setValue para renderizar el HTML del RichTextEditor
-            contenidoHtml.getElement().setProperty("innerHTML", articulo.getContenido());
+            contenidoTexto.getElement().setProperty("innerHTML", articulo.getContenido());
 
             // (Opcional: Si tienes imágenes asociadas al artículo)
             // imagenHeader.setSrc("/ruta/a/imagen/" + articulo.getImagenId());
@@ -110,7 +108,7 @@ public class BlogArticuloView extends VerticalLayout implements BeforeEnterObser
         } else {
             // Artículo no encontrado - Mostrar mensaje o redirigir
             titulo.setText("Artículo no encontrado");
-            contenidoHtml.setText("Lo sentimos, la página que buscas no existe o ha sido movida.");
+            contenidoTexto.setText("Lo sentimos, la página que buscas no existe o ha sido movida.");
             imagenHeader.setVisible(false);
 
             // También actualiza el título de la página para indicar el error
