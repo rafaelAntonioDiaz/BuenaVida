@@ -192,8 +192,7 @@ public class ConfirmacionCitasView extends VerticalLayout {
             }
         });
         confirmar.addThemeVariants(ButtonVariant.LUMO_PRIMARY); // Corregido: usar addThemeVariants
-        confirmar.setEnabled(s.getEstado() == Sesion.EstadoSesion.PROGRAMADA && puedeConfirmarseHoyConAnticipo(s));
-
+        confirmar.setEnabled(s.getEstado() == Sesion.EstadoSesion.PROGRAMADA);
         Button recordatorio = new Button("Recordatorio", e -> {
             try {
                 notificacionService.enviarRecordatorioPaciente(s);

@@ -17,15 +17,13 @@ public class NotificacionNativaService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // Envía notificación nativa solo si hay UI activa
-    public void enviarNotificacionNativaCita(Sesion sesion) {
+    public void enviarNotificacionNativa(Sesion sesion, String mensaje) {
         Optional<UI> activeUI = getActiveUI();
         if (activeUI.isEmpty()) {
             return; // No loggear; es un caso esperado en tareas programadas
         }
         UI ui = activeUI.get();
         ui.access(() -> {
-            String mensaje = "Cita programada para el " + sesion.getFecha().format(FORMATTER) +
-                    " - Motivo: " + escaparTextoJavaScript(sesion.getMotivo());
             String script = buildNotificationScript(mensaje);
             ui.getPage().executeJs(script);
         });

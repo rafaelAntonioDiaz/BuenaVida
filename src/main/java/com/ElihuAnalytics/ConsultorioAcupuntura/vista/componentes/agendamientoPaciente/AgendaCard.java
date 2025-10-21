@@ -5,6 +5,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.PacienteRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -52,43 +53,44 @@ public class AgendaCard extends VerticalLayout {
         this.notificacionService = notificacionService;
         this.pacienteRepository = pacienteRepository;
 
-        // Validar paciente
+        // --- Validación Paciente (se mantiene) ---
         if (paciente == null || paciente.getId() == null) {
-            log.error("Paciente inválido recibido: id={}, username={}",
-                    paciente != null ? paciente.getId() : "null",
-                    paciente != null ? paciente.getUsername() : "null");
-            throw new IllegalStateException("Paciente inválido: ID nulo o paciente no proporcionado");
+            log.error("Paciente inválido");
+            throw new IllegalStateException("Paciente inválido");
         }
-
-        Optional<Paciente> pacienteVerificado = pacienteRepository.findById(paciente.getId());
-        if (pacienteVerificado.isEmpty()) {
-            log.error("Paciente no encontrado en la base de datos: id={}, username={}",
-                    paciente.getId(), paciente.getUsername());
-            throw new IllegalStateException("Paciente no registrado en la base de datos");
+        Optional<Paciente> pacienteOpt = pacienteRepository.findById(paciente.getId());
+        if (pacienteOpt.isEmpty()) {
+            log.error("Paciente ID {} no en DB", paciente.getId());
+            throw new IllegalStateException("Paciente no registrado");
         }
+        this.paciente = pacienteOpt.get();
+        log.info("AgendaCard inicializada para Paciente ID {}",
+        this.paciente.getId());
+        // --- Fin Validación ---
 
-        this.paciente = pacienteVerificado.get();
-        log.info("Paciente inicializado en AgendaCard: id={}, username={}",
-                this.paciente.getId(), this.paciente.getUsername());
-
-        setWidth("400px");
+        setWidth("100%"); // Hacemos que ocupe más ancho
+        setMaxWidth("500px"); // Limitamos el ancho máximo
         setPadding(true);
         setSpacing(true);
         addClassName("card");
         addClassName("agenda-card");
 
-        // 🔹 Título principal
-        H3 titulo = new H3("Citas");
+        H3 titulo = new H3("Agendar Cita");
         titulo.addClassName("seccion-titulo");
 
-        // 🔹 Botón que despliega/oculta el formulario
-        Button btnToggleAgenda = new Button("Reserve su cita");
-        btnToggleAgenda.addClassName("btn-primary");
+        Button btnToggleAgenda = new Button("Mostrar/Ocultar Agendamiento");
+        btnToggleAgenda.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // 🔹 Crear subcomponentes (idénticos a la versión anterior)
-        agendaForm = new AgendaForm(paciente, sesionService, notificacionService, pacienteRepository);
-        calendarioMes = new CalendarioMes(paciente.getId(), sesionService, agendaForm.getFechaHoraPicker());
-        citasLista = new CitasLista(paciente.getId(), sesionService, notificacionService);
+        // --- INICIO DE LA CORRECCIÓN ---
+        // 1. Crear AgendaForm PRIMERO
+        agendaForm = new AgendaForm(this.paciente, sesionService, notificacionService, pacienteRepository);
+
+        // 2. Crear CalendarioMes, pasando los MÉTODOS de AgendaForm como listeners
+        calendarioMes = new CalendarioMes(this.paciente.getId(), sesionService, agendaForm::setFechaSeleccionada, agendaForm::actualizarHorasDisponibles);
+
+        // 3. Crear CitasLista (sin cambios)
+        citasLista = new CitasLista(this.paciente.getId(), sesionService, notificacionService);
+        // --- FIN DE LA CORRECCIÓN ---
 
         // 🔹 Registrar callback de actualización
         agendaForm.onAgendarSuccess(() -> {

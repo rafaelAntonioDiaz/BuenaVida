@@ -5,169 +5,266 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.PacienteRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotificacionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
+import com.vaadin.flow.component.select.Select; // Necesario
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate; // Necesario
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import java.time.LocalTime; // Necesario
+import java.time.format.DateTimeFormatter; // Necesario
+import java.util.*;
 
+import com.vaadin.flow.data.provider.ListDataProvider; // <-- Añadir este import
 /**
- * Componente para el formulario de agendamiento de citas.
+ * Formulario para agendar una nueva cita.
+ * Recibe la fecha de CalendarioMes y actualiza las horas disponibles.
  */
-public class AgendaForm extends VerticalLayout {
+public class AgendaForm extends FormLayout {
 
     private static final Logger log = LoggerFactory.getLogger(AgendaForm.class);
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
-    private static final Duration DURACION_CITA = Duration.ofHours(1);
 
     private final Paciente paciente;
     private final SesionService sesionService;
     private final NotificacionService notificacionService;
+    // Mantenemos PacienteRepository por si el merge es necesario
     private final PacienteRepository pacienteRepository;
 
-    private final DateTimePicker fechaHoraPicker;
-    private final TextArea motivoField;
-    private final TextField lugarField;
-    private Runnable onAgendarSuccessCallback;
+    // --- Campos UI ---
+    // Ya NO tenemos DatePicker aquí
+    private final Select<LocalTime> horaPicker = new Select<>();
+    private final TextField lugar = new TextField("Lugar");
+    private final TextArea motivo = new TextArea("Motivo");
+    private final Button btnAgendar = new Button("Agendar Cita");
 
-    public AgendaForm(Paciente paciente, SesionService sesionService, NotificacionService notificacionService,
-                      PacienteRepository pacienteRepository) {
+    // --- Estado interno ---
+    private LocalDate fechaSeleccionada; // Guarda la fecha recibida de CalendarioMes
+
+    private final Binder<Sesion> binder = new Binder<>(Sesion.class);
+    private Runnable onAgendarSuccessCallback = () -> {};
+
+    public AgendaForm(Paciente paciente, SesionService sesionService, NotificacionService notificacionService, PacienteRepository pacienteRepository) {
+        this.paciente = paciente;
         this.sesionService = sesionService;
         this.notificacionService = notificacionService;
         this.pacienteRepository = pacienteRepository;
 
-        if (paciente == null || paciente.getId() == null) {
-            log.error("Paciente inválido recibido: id={}, username={}",
-                    paciente != null ? paciente.getId() : "null",
-                    paciente != null ? paciente.getUsername() : "null");
-            throw new IllegalStateException("Paciente inválido: ID nulo o paciente no proporcionado");
-        }
-        Optional<Paciente> pacienteVerificado = pacienteRepository.findById(paciente.getId());
-        if (!pacienteVerificado.isPresent()) {
-            log.error("Paciente no encontrado en la base de datos: id={}, username={}",
-                    paciente.getId(), paciente.getUsername());
-            throw new IllegalStateException("Paciente no registrado en la base de datos");
-        }
-        this.paciente = pacienteVerificado.get();
-        log.info("Paciente inicializado en AgendaForm: id={}, username={}", this.paciente.getId(), this.paciente.getUsername());
+        //addClassName("agenda-form");
 
-        setPadding(true);
-        setSpacing(true);
+        configurarCampos();
+        configurarBinder();
+        configurarBotonAgendar();
 
-        fechaHoraPicker = new DateTimePicker("Fecha y hora");
-        fechaHoraPicker.setStep(Duration.ofMinutes(30));
-        fechaHoraPicker.setMin(LocalDateTime.now());
+        // El DatePicker ya no se añade aquí
+        add(horaPicker, lugar, motivo, btnAgendar);
+        setResponsiveSteps(new ResponsiveStep("0", 1));
 
-        motivoField = new TextArea("Motivo");
-        motivoField.setMaxLength(500);
-        motivoField.setRequired(true);
-
-        lugarField = new TextField("Lugar (opcional)");
-        lugarField.setMaxLength(255);
-
-        Button agendar = new Button("Agendar", e -> agendarCita());
-        agendar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        add(fechaHoraPicker, motivoField, lugarField, agendar);
+        // Deshabilitar hora y botón inicialmente
+        horaPicker.setEnabled(false);
+        btnAgendar.setEnabled(false);
     }
 
-    @Transactional
-    public void agendarCita() {
-        LocalDateTime inicio = fechaHoraPicker.getValue();
-        String txtMotivo = Optional.ofNullable(motivoField.getValue()).map(String::trim).orElse("");
-        String txtLugar = Optional.ofNullable(lugarField.getValue()).map(String::trim).orElse("");
+    private void configurarCampos() {
+        horaPicker.setLabel("Hora Disponible"); // Select usa setLabel
+        horaPicker.setRequiredIndicatorVisible(true); // Indica que es requerido
+        horaPicker.setPlaceholder("Seleccione una hora");
+        horaPicker.setItemLabelGenerator(time -> { // Funciona igual
+            if (time == null) return "";
+            try { return time.format(DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "CO"))); }
+            catch (Exception e) { return time.toString(); }
+        });
+        horaPicker.setItems(List.of()); // Items vacíos inicialmente
+        horaPicker.addValueChangeListener(e -> {
+            btnAgendar.setEnabled(fechaSeleccionada != null && e.getValue() != null);
+        });
 
-        if (inicio == null) {
-            mostrarNotificacion("Selecciona una fecha y hora.", NotificationVariant.LUMO_ERROR);
-            return;
-        }
-        if (inicio.isBefore(LocalDateTime.now())) {
-            mostrarNotificacion("La fecha debe ser futura.", NotificationVariant.LUMO_ERROR);
-            return;
-        }
-        if (txtMotivo.isBlank()) {
-            mostrarNotificacion("El motivo es obligatorio.", NotificationVariant.LUMO_ERROR);
-            return;
-        }
-        Optional<Paciente> pacientePersistido = pacienteRepository.findById(paciente.getId());
-        if (!pacientePersistido.isPresent()) {
-            log.error("Paciente no encontrado al agendar: id={}, username={}", paciente.getId(), paciente.getUsername());
-            mostrarNotificacion("Error: Paciente no registrado en la base de datos.", NotificationVariant.LUMO_ERROR);
-            return;
-        }
-        Paciente pacienteManaged = pacientePersistido.get();
+        lugar.setRequiredIndicatorVisible(true);
+        lugar.setPlaceholder("Ej: Domicilio Calle X #Y-Z");
 
-        if (!sesionService.estaDisponible(inicio, DURACION_CITA)) {
-            mostrarNotificacion("El horario seleccionado ya está ocupado o hay un conflicto con el desplazamiento.",
-                    NotificationVariant.LUMO_ERROR);
+        motivo.setRequiredIndicatorVisible(true);
+        motivo.setPlaceholder("Breve descripción del motivo de la consulta");
+        motivo.setMinHeight("100px");
+
+        btnAgendar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+    }
+
+    private void configurarBinder() {
+        binder.forField(lugar).asRequired("Lugar es requerido").bind(Sesion::getLugar, Sesion::setLugar);
+        binder.forField(motivo).asRequired("Motivo es requerido").bind(Sesion::getMotivo, Sesion::setMotivo);
+        binder.setBean(new Sesion());
+    }
+
+    private void configurarBotonAgendar() {
+        btnAgendar.addClickListener(event -> guardarCita());
+    }
+
+    private void guardarCita() {
+        // 1. Validar selecciones de fecha y hora (UI)
+        LocalTime horaSeleccionada = horaPicker.getValue();
+        if (fechaSeleccionada == null || horaSeleccionada == null) {
+            Notification.show("Seleccione una fecha y hora válidas.", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_WARNING);
             return;
         }
 
-        Sesion sesion = new Sesion();
-        sesion.setFecha(inicio);
-        sesion.setMotivo(txtMotivo);
-        sesion.setEstado(Sesion.EstadoSesion.PROGRAMADA);
-        sesion.setPaciente(pacienteManaged);
-        sesion.setLugar(txtLugar.isBlank() ? null : txtLugar);
-        sesion.setDuracion(DURACION_CITA);
+        // 2. Validar campos de texto (UI)
+        String valorLugar = lugar.getValue();
+        String valorMotivo = motivo.getValue();
+        if (valorLugar == null || valorLugar.isBlank()) {
+            lugar.setInvalid(true); // Marca el campo como inválido
+            lugar.setErrorMessage("El lugar es obligatorio");
+            Notification.show("Por favor, ingrese el lugar de la cita.", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_WARNING);
+            return;
+        } else {
+            lugar.setInvalid(false); // Limpia error si ahora es válido
+        }
+        if (valorMotivo == null || valorMotivo.isBlank()) {
+            motivo.setInvalid(true); // Marca el campo como inválido
+            motivo.setErrorMessage("El motivo es obligatorio");
+            Notification.show("Por favor, ingrese el motivo de la cita.", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_WARNING);
+            return;
+        } else {
+            motivo.setInvalid(false); // Limpia error si ahora es válido
+        }
 
+
+        // --- INICIO DE LA CORRECCIÓN ---
+        // 3. Crear y poblar el objeto Sesion MANUALMENTE
+        Sesion nuevaSesion = new Sesion();
         try {
-            log.info("Guardando sesión: paciente_id={}, username={}, fecha={}, motivo={}",
-                    pacienteManaged.getId(), pacienteManaged.getUsername(), inicio, txtMotivo);
-            sesionService.guardarSesion(sesion);
-            mostrarNotificacion("Sesión programada: " + inicio.format(FORMATO_FECHA) + " " + inicio.format(FORMATO_HORA),
-                    NotificationVariant.LUMO_SUCCESS);
-            notificacionService.enviarNotificacionProgramacionMedico(sesion);
+            LocalDateTime fechaHoraCita = LocalDateTime.of(fechaSeleccionada, horaSeleccionada);
+            nuevaSesion.setFecha(fechaHoraCita);
+            nuevaSesion.setPaciente(this.paciente);
+            nuevaSesion.setDuracion(Duration.ofHours(1)); // O tu constante
+            nuevaSesion.setLugar(valorLugar);     // Usar valor leído del campo
+            nuevaSesion.setMotivo(valorMotivo);   // Usar valor leído del campo
+            // El estado PROGRAMADA lo asigna el servicio
+
+            log.info("Intentando guardar nueva sesión: Paciente ID={}, FechaHora={}, Lugar={}, Motivo={}",
+                    nuevaSesion.getPaciente().getId(), nuevaSesion.getFecha(), nuevaSesion.getLugar(), nuevaSesion.getMotivo());
+
+            // 4. Llamar al servicio para guardar
+            sesionService.guardarSesion(nuevaSesion);
+
+            // --- FIN DE LA CORRECCIÓN ---
+
+            log.info("Sesión guardada exitosamente.");
+            Notification.show("Cita programada con éxito. Recibirás una notificación.", 4000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
             limpiarFormulario();
-            fireEvent(new AgendarEvent(this, true));
-            if (onAgendarSuccessCallback != null) {
-                onAgendarSuccessCallback.run();
+            onAgendarSuccessCallback.run();
+
+            // Eliminamos ValidationException ya que no usamos binder.writeBean
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            log.error("Error al guardar la sesión (ej. horario no disponible): {}", e.getMessage(), e);
+            Notification.show("Error al guardar la cita: " + e.getMessage(), 5000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+            actualizarHorasDisponibles(sesionService.getHorasDisponibles(fechaSeleccionada));
+        } catch (Exception e) {
+            // Captura genérica para otros errores (ej. ConstraintViolationException si falla en el servicio)
+            log.error("Error inesperado al guardar la sesión: {}", e.getMessage(), e);
+            // Mostrar mensaje genérico o específico si puedes identificar ConstraintViolationException
+            if (e.getCause() instanceof jakarta.validation.ConstraintViolationException) {
+                Notification.show("Error de validación al guardar. Verifique los datos.", 5000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } else {
+                Notification.show("Ocurrió un error inesperado al agendar.", 5000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
-        } catch (Exception ex) {
-            log.error("Error al guardar la sesión: paciente_id={}, username={}, mensaje={}",
-                    pacienteManaged.getId(), pacienteManaged.getUsername(), ex.getMessage(), ex);
-            mostrarNotificacion("Error al guardar la sesión: " + ex.getMessage(), NotificationVariant.LUMO_ERROR);
-            throw ex;
         }
     }
-
-    public void limpiarFormulario() {
-        fechaHoraPicker.clear();
-        motivoField.clear();
-        lugarField.clear();
+    /** Limpia el formulario y resetea el estado interno */
+    private void limpiarFormulario() {
+        binder.setBean(new Sesion()); // Limpia binder
+        horaPicker.clear();
+        lugar.clear();
+        motivo.clear();
+        fechaSeleccionada = null; // Resetea fecha
+        actualizarHorasDisponibles(Collections.emptyList()); // Limpia y deshabilita hora
     }
 
-    private void mostrarNotificacion(String mensaje, NotificationVariant variant) {
-        Notification notification = new Notification(mensaje, 3000, Notification.Position.TOP_CENTER);
-        notification.addThemeVariants(variant);
-        notification.open();
+
+    /**
+     * Método público llamado por CalendarioMes para establecer la fecha seleccionada.
+     */
+    public void setFechaSeleccionada(LocalDate fecha) {
+        this.fechaSeleccionada = fecha;
+        log.debug("Fecha seleccionada en AgendaForm: {}", fecha);
+        // Habilitar/deshabilitar botón Agendar basado en si hay HORA seleccionada
+        btnAgendar.setEnabled(fecha != null && horaPicker.getValue() != null);
+        // Podrías mostrar la fecha seleccionada en algún sitio si quieres
     }
 
-    public DateTimePicker getFechaHoraPicker() {
-        return fechaHoraPicker;
-    }
+    /**
+     * Método público llamado por CalendarioMes para actualizar las horas disponibles.
+     * CORREGIDO: Añade UI.push() para forzar la actualización.
+     */
+    /**
+     * Método público llamado por CalendarioMes para actualizar las horas disponibles.
+     * CORREGIDO: Simplificado, verifica estado y prueba toString().
+     */
+    /**
+     * Método público llamado por CalendarioMes para actualizar las horas disponibles.
+     * CORREGIDO: Eliminado UI.push(), simplificado label generator.
+     */
+    public void actualizarHorasDisponibles(List<LocalTime> horas) {
+        // Asegurar lista no nula y ordenar
+        List<LocalTime> horasParaMostrar = (horas != null) ? new ArrayList<>(horas) : Collections.emptyList();
+        Collections.sort(horasParaMostrar);
+        log.debug("AgendaForm.actualizarHorasDisponibles llamado con {} horas: {}", horasParaMostrar.size(), horasParaMostrar);
 
-    public void onAgendarSuccess(Runnable callback) {
+        LocalTime horaSeleccionadaAntes = horaPicker.getValue();
+
+        // --- INICIO DE LA CORRECCIÓN ---
+
+        // 1. Limpiar valor anterior
+        horaPicker.clear();
+
+        // 2. Establecer formateador ULTRA SIMPLE (temporal)
+        horaPicker.setItemLabelGenerator(Object::toString); // Solo llama a toString()
+
+        // 3. Establecer los items
+        horaPicker.setItems(horasParaMostrar);
+
+        // --- FIN DE LA CORRECCIÓN ---
+
+        // Log después de setItems
+        log.debug("ComboBox horaPicker items establecidos con {} horas. isEmpty()? -> {}", horasParaMostrar.size(), horaPicker.isEmpty());
+
+
+        // Restaurar selección si aplica
+        if (horaSeleccionadaAntes != null && horasParaMostrar.contains(horaSeleccionadaAntes)) {
+            // Re-seleccionar SOLO si el valor es válido y está en la lista
+            try {
+                horaPicker.setValue(horaSeleccionadaAntes);
+                log.debug("Valor anterior {} restaurado en ComboBox.", horaSeleccionadaAntes);
+            } catch (IllegalArgumentException e) {
+                // Esto puede pasar si setValue falla porque el item no se reconoce
+                log.warn("No se pudo restaurar el valor anterior {}: {}", horaSeleccionadaAntes, e.getMessage());
+                horaPicker.clear(); // Asegurar que quede limpio si falla la restauración
+            }
+        } else {
+            log.debug("ComboBox valor no restaurado (no había valor anterior o no está en la nueva lista).");
+        }
+
+        // Habilitar/deshabilitar
+        boolean hayHoras = !horasParaMostrar.isEmpty();
+        horaPicker.setEnabled(hayHoras);
+        horaPicker.setPlaceholder(hayHoras ? "Seleccione una hora" : (fechaSeleccionada == null ? "Seleccione fecha primero" : "No hay horas disponibles"));
+        // El botón Agendar depende de si hay fecha Y hora seleccionada AHORA
+        btnAgendar.setEnabled(fechaSeleccionada != null && horaPicker.getValue() != null);
+        log.debug("ComboBox habilitado (estado final): {}, Botón Agendar habilitado: {}", horaPicker.isEnabled(), btnAgendar.isEnabled());
+
+        // ELIMINAMOS UI.push()
+    }    public void onAgendarSuccess(Runnable callback) {
         this.onAgendarSuccessCallback = callback;
     }
 
-    // Evento para notificar agendamiento exitoso
-    public static class AgendarEvent extends ComponentEvent<AgendaForm> {
-        public AgendarEvent(AgendaForm source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
+    // Ya no necesitamos getFechaHoraPicker()
 }

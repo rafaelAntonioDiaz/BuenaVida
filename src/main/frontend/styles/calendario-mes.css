@@ -1,0 +1,162 @@
+/* ============================================
+   ESTILOS PARA CalendarioMes.java
+   ============================================ */
+
+.calendario-mes {
+    width: 100%;
+    max-width: 1200px; /* Ancho máximo para el mes */
+  /* Estilos generales del contenedor si son necesarios */
+  /* border: 1px solid #ccc; */
+  /* padding: var(--lumo-space-s); */
+  /* background-color: rgba(255, 255, 255, 0.8); */
+  /* border-radius: var(--radius-sm); */
+}
+
+.calendario-titulo-mes {
+  font-weight: 600;
+  color: var(--color-primary-dark); /* Usa tu variable de color */
+  font-size: var(--lumo-font-size-l);
+}
+
+/* --- Cuadrícula del Calendario --- */
+.calendario-grid-dias {
+    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7 columnas iguales */
+  gap: 2px; /* Pequeño espacio entre celdas */
+  margin-top: var(--lumo-space-s);
+  user-select: none; /* Evita seleccionar el texto de los números */
+}
+
+/* --- Encabezados Lunes, Martes... --- */
+.calendario-week-header {
+    display: contents; /* Hace que los hijos se comporten como celdas directas del grid */
+}
+.calendario-weekday {
+  text-align: center;
+  font-size: var(--lumo-font-size-s);
+  font-weight: 600;
+  color: var(--color-text-light); /* Usa tu variable */
+  padding-bottom: var(--lumo-space-xs);
+  border-bottom: 1px solid var(--lumo-contrast-10pct);
+}
+
+/* --- Celdas de Día --- */
+.calendario-dia,
+.calendario-dia-vacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1; /* Hace que las celdas sean cuadradas */
+  border-radius: var(--radius-sm); /* Bordes redondeados */
+  font-size: var(--lumo-font-size-m);
+  cursor: default; /* Cursor por defecto */
+  transition: all 0.15s ease-in-out;
+  border: 1px solid transparent; /* Borde invisible para mantener tamaño */
+}
+
+.calendario-dia-vacio {
+  visibility: hidden; /* Oculta celdas vacías */
+}
+
+/* --- Estilos Específicos de Días --- */
+
+/* Día normal y habilitado (hover) */
+.calendario-dia:not(.deshabilitado):not(.seleccionado):hover {
+  background-color: var(--lumo-primary-color-10pct); /* Usa color primario de Vaadin */
+  cursor: pointer;
+  border: 1px solid var(--lumo-primary-color-50pct);
+}
+
+/* Día de hoy */
+.calendario-dia.hoy {
+  font-weight: bold;
+  color: var(--color-primary); /* Usa tu variable de color primario */
+  border: 1px dashed var(--color-primary);
+}
+.calendario-dia.hoy:not(.seleccionado):hover {
+   background-color: var(--lumo-primary-color-10pct);
+}
+
+
+/* Día seleccionado */
+.calendario-dia.seleccionado {
+  background-color: var(--color-primary); /* Fondo verde primario */
+  color: white; /* Texto blanco */
+  font-weight: bold;
+  border: 1px solid var(--color-primary-dark);
+  cursor: pointer; /* Permite deseleccionar */
+}
+.calendario-dia.seleccionado:hover {
+    background-color: var(--color-primary-hover); /* Verde más claro al pasar */
+}
+
+
+/* Fin de semana */
+.calendario-dia.finde {
+  color: var(--color-text-light); /* Color más tenue */
+}
+/* Domingo deshabilitado */
+.calendario-dia.finde.deshabilitado {
+    /* Mantiene el color tenue */
+}
+
+
+/* Día festivo (generalmente deshabilitado) */
+.calendario-dia.festivo {
+  color: var(--color-error); /* Color rojo (o el que prefieras) */
+  /* Podrías añadir un icono pequeño o borde si quieres */
+}
+.calendario-dia.festivo.deshabilitado {
+    color: var(--lumo-error-color-50pct); /* Rojo más tenue */
+    text-decoration: line-through;
+}
+
+
+/* Día con cita */
+.calendario-dia.con-cita {
+  /* Añade un indicador visual, por ejemplo, un punto debajo */
+  position: relative;
+}
+.calendario-dia.con-cita::after {
+  content: '';
+  position: absolute;
+  bottom: 4px; /* Ajusta posición vertical */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-secondary); /* Usa tu color secundario */
+}
+/* Ajusta el color del punto si el día está seleccionado */
+.calendario-dia.con-cita.seleccionado::after {
+    background-color: white;
+}
+
+
+/* Día deshabilitado (pasado, domingo, festivo) */
+.calendario-dia.deshabilitado {
+  color: var(--lumo-disabled-text-color);
+  background-color: var(--lumo-contrast-5pct); /* Fondo grisáceo muy claro */
+  cursor: not-allowed;
+  text-decoration: line-through; /* Tachado */
+}
+.calendario-dia.deshabilitado:hover {
+    /* Sin efecto hover */
+}
+
+/* --- Ajustes Responsive (Opcional) --- */
+@media (max-width: 400px) {
+    .calendario-dia, .calendario-dia-vacio {
+        font-size: var(--lumo-font-size-s); /* Más pequeño en móviles */
+    }
+    .calendario-weekday {
+        font-size: var(--lumo-font-size-xs);
+    }
+     .calendario-dia.con-cita::after {
+        width: 4px;
+        height: 4px;
+        bottom: 2px;
+    }
+}

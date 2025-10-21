@@ -17,12 +17,15 @@ import com.vaadin.flow.theme.Theme;
         name = "Buena Vida Acupuntura",
         shortName = "Buena Vida",
         description = "Consultorio en el ciberespacio",
-        backgroundColor = "#ffffff",
-        themeColor = "#4CAF50",
-        iconPath = "images/fondoNaturaleza-soft.png", // Ruta al ícono de la aplicación
-        manifestPath = "manifest.webmanifest",
-        offlinePath = "offline.html",
-        offlineResources = { "images/fondoNaturaleza-soft.png" }
+        backgroundColor = "#ffffff", // Mantener
+        themeColor = "#4CAF50",      // Mantener
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Usa tu logo SVG principal. Vaadin lo usará como base.
+        iconPath = "images/logo-rafael-diaz-sarmiento.svg", // O -grueso.svg
+        manifestPath = "manifest.webmanifest", // Mantener
+        offlinePath = "offline.html"          // Mantener si tienes offline.html
+        // offlineResources ELIMINADO para simplificar la precarga
+        // --- FIN DE LA CORRECCIÓN ---
 )
 @Theme("consultorio")
 @Push(PushMode.AUTOMATIC)
