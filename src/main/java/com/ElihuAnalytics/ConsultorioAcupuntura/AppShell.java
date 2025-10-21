@@ -21,7 +21,7 @@ import com.vaadin.flow.theme.Theme;
         themeColor = "#4CAF50",      // Mantener
         // --- INICIO DE LA CORRECCIÓN ---
         // Usa tu logo SVG principal. Vaadin lo usará como base.
-        iconPath = "images/logo-rafael-diaz-sarmiento.svg", // O -grueso.svg
+        iconPath = "images/fondoNaturaleza-soft.png",
         manifestPath = "manifest.webmanifest", // Mantener
         offlinePath = "offline.html"          // Mantener si tienes offline.html
         // offlineResources ELIMINADO para simplificar la precarga

@@ -1,6 +1,6 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.agendamientoPaciente;
 
-import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion; // Necesario para obtenerSesionesPorPacienteYMes
+import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.SesionService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.util.FestivosColombia;
 import com.vaadin.flow.component.button.Button;
@@ -17,17 +17,17 @@ import org.slf4j.LoggerFactory;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime; // Necesario
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map; // Necesario para agrupar sesiones
-import java.util.Set; // Necesario para agrupar sesiones
-import java.util.function.Consumer; // Necesario
-import java.util.stream.Collectors; // Necesario para agrupar sesiones
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Componente de calendario mensual visual.
@@ -37,6 +37,10 @@ import java.util.stream.Collectors; // Necesario para agrupar sesiones
 public class CalendarioMes extends VerticalLayout {
 
     private static final Logger log = LoggerFactory.getLogger(CalendarioMes.class);
+
+    // --- ACTUALIZACIÓN: Definir Locale como una constante estática ---
+    private static final Locale LOCALE_COLOMBIA = Locale.of("es", "CO");
+
     private final Long pacienteId;
     private final SesionService sesionService;
     private YearMonth mesActual;
@@ -121,7 +125,8 @@ public class CalendarioMes extends VerticalLayout {
 
 
     private void pintarCalendario() {
-        tituloMes.setText(mesActual.format(DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "CO"))));
+        // --- ACTUALIZACIÓN: Usar la constante estática LOCALE_COLOMBIA ---
+        tituloMes.setText(mesActual.format(DateTimeFormatter.ofPattern("MMMM yyyy", LOCALE_COLOMBIA)));
         gridDias.removeAll();
 
         // Añadir encabezados de días de la semana (Lu, Ma, Mi...)
@@ -130,7 +135,8 @@ public class CalendarioMes extends VerticalLayout {
         // Empezando desde Lunes (DayOfWeek.MONDAY)
         for (int i = 0; i < 7; i++) {
             DayOfWeek day = DayOfWeek.MONDAY.plus(i);
-            Span dayLabel = new Span(day.getDisplayName(TextStyle.SHORT, new Locale("es", "CO")));
+            // --- ACTUALIZACIÓN: Usar la constante estática LOCALE_COLOMBIA ---
+            Span dayLabel = new Span(day.getDisplayName(TextStyle.SHORT, LOCALE_COLOMBIA));
             dayLabel.addClassName("calendario-weekday");
             weekHeader.add(dayLabel);
         }
