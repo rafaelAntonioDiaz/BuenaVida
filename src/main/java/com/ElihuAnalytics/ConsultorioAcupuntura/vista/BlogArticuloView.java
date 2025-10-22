@@ -16,7 +16,8 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Autowired; // <-- IMPORTAR AUTOWIRED
 
 import java.util.Optional;
-
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 /**
  * Vista pública para mostrar un artículo de blog individual.
  * Carga el contenido desde la base de datos usando BlogArticuloService.
@@ -28,6 +29,8 @@ import java.util.Optional;
 public class BlogArticuloView extends VerticalLayout implements BeforeEnterObserver {
 
     private final BlogArticuloService blogArticuloService; // <-- INYECTAR SERVICIO
+    private static final Parser parser = Parser.builder().build();
+    private static final HtmlRenderer renderer = HtmlRenderer.builder().build();
 
     private H1 titulo = new H1();
     // Usamos Div para poder renderizar HTML del RichTextEditor
@@ -78,7 +81,7 @@ public class BlogArticuloView extends VerticalLayout implements BeforeEnterObser
                 .orElseThrow(() -> new NotFoundException("Slug no proporcionado")); // Lanza error 404 si no hay slug
 
         // --- INICIO DE LA LÓGICA DE CARGA ---
-        Optional<BlogArticulo> articuloOpt = blogArticuloService.findBySlug(slugArticulo);
+        Optional<BlogArticulo> articuloOpt = Optional.ofNullable(blogArticuloService.findBySlug(slugArticulo));
 
         if (articuloOpt.isPresent()) {
             BlogArticulo articulo = articuloOpt.get();
@@ -86,8 +89,14 @@ public class BlogArticuloView extends VerticalLayout implements BeforeEnterObser
             // 1. Actualizar UI
             titulo.setText(articulo.getTitulo());
             // ¡IMPORTANTE! Usamos setValue para renderizar el HTML del RichTextEditor
-            contenidoTexto.getElement().setProperty("innerHTML", articulo.getContenido());
+// 1. Obtener el Markdown
+            String contenidoMarkdown = articulo.getContenido();
 
+// 2. Convertir Markdown a HTML
+            String contenidoHtml = renderer.render(parser.parse(contenidoMarkdown));
+
+// 3. Poner el HTML (ya convertido) en el elemento
+            contenidoTexto.getElement().setProperty("innerHTML", contenidoHtml);
             // (Opcional: Si tienes imágenes asociadas al artículo)
             // imagenHeader.setSrc("/ruta/a/imagen/" + articulo.getImagenId());
             // imagenHeader.setVisible(true);

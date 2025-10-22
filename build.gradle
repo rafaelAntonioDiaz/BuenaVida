@@ -49,6 +49,7 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
         exclude group: 'org.neo4j'
     implementation 'org.slf4j:slf4j-api'
+    implementation 'org.commonmark:commonmark:0.21.0'
     }
 
     compileOnly 'org.projectlombok:lombok'

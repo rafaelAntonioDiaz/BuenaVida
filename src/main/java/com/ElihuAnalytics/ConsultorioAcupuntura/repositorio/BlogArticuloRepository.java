@@ -31,4 +31,5 @@ public interface BlogArticuloRepository extends JpaRepository<BlogArticulo, Long
      * Lo usaremos para alimentar la sección "Publicaciones Recientes" del HomeView.
      */
     List<BlogArticulo> findTop3ByOrderByFechaCreacionDesc();
+
 }

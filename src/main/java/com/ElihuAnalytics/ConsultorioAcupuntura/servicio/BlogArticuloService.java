@@ -64,8 +64,9 @@ public class BlogArticuloService {
      * @param slug El identificador de la URL.
      * @return Un Optional con el artículo.
      */
-    public Optional<BlogArticulo> findBySlug(String slug) {
-        return blogArticuloRepository.findBySlug(slug);
+    public BlogArticulo findBySlug(String slug) {
+        // Usamos .orElse(null) para obtener el artículo o un 'null' si no se encuentra
+        return blogArticuloRepository.findBySlug(slug).orElse(null);
     }
 
     /**
