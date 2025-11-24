@@ -1,18 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
     <url>
         <loc>https://acupunturarafaeldiaz.pro/</loc>
         <lastmod>2025-10-17</lastmod>
         <priority>1.0</priority>
+        <xhtml:meta name="description" content="Acupuntura a domicilio en Bucaramanga por Rafael Díaz. Alivio natural de dolor, estrés, migrañas y más con tratamientos personalizados. ¡Agenda tu sesión hoy y recupera tu bienestar!" />
     </url>
+
     <url>
         <loc>https://acupunturarafaeldiaz.pro/login</loc>
         <lastmod>2025-10-17</lastmod>
         <priority>0.5</priority>
+        <xhtml:meta name="description" content="Accede a tu área privada de Acupuntura Rafael Díaz: gestiona citas, historial clínico y recursos exclusivos para tu tratamiento." />
     </url>
+
     <url>
         <loc>https://acupunturarafaeldiaz.pro/registro</loc>
         <lastmod>2025-10-17</lastmod>
         <priority>0.8</priority>
+        <xhtml:meta name="description" content="Regístrate gratis en Acupuntura Rafael Díaz y reserva tu sesión de acupuntura a domicilio en Bucaramanga. Crea tu perfil en minutos." />
     </url>
+
+    <url>
+        <loc>https://acupunturarafaeldiaz.pro/blog/cuando-la-cultura-nos-enferma-la-cultura-aberrante</loc>
+        <lastmod>2025-11-24</lastmod>
+        <priority>0.8</priority>
+        <xhtml:meta name="description" content="¿La cultura moderna te está enfermando? Descubre cómo los patrones culturales aberrantes afectan tu salud y cómo sanarlos con enfoques holísticos y acupuntura." />
+    </url>
+
+    <url>
+        <loc>https://acupunturarafaeldiaz.pro/blog/acupuntura-y-enfermedad-de-parkinson</loc>
+        <lastmod>2025-11-24</lastmod>
+        <priority>0.8</priority>
+        <xhtml:meta name="description" content="Acupuntura para Parkinson en Bucaramanga: reduce temblores, rigidez y mejora la movilidad de forma natural. Tratamientos efectivos y personalizados." />
+    </url>
+
+    <url>
+        <loc>https://acupunturarafaeldiaz.pro/blog/tu-cuerpo-actual-es-el-resultado-de-como-has-sobrevivido-hasta-hoy</loc>
+        <lastmod>2025-11-24</lastmod>
+        <priority>0.8</priority>
+        <xhtml:meta name="description" content="Tu cuerpo es el mapa de cómo has sobrevivido. Descubre cómo el estrés y los traumas del pasado se reflejan hoy y cómo la acupuntura puede restaurar tu equilibrio natural." />
+    </url>
+
 </urlset>
