@@ -1,6 +1,8 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura;
 
+import com.ElihuAnalytics.ConsultorioAcupuntura.config.GoogleAnalyticsInitListener;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -30,6 +32,10 @@ public class ConsultorioDeAcupunturaApplication {
     @Bean
     public org.springframework.boot.CommandLineRunner startupLog() {
         return args -> System.out.println("Contexto levantado: escaneo de entidades/repos habilitado.");
+    }
+    @Bean
+    public VaadinServiceInitListener googleAnalyticsListener() {
+        return new GoogleAnalyticsInitListener();
     }
 
 }
