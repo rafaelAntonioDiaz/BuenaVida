@@ -2,11 +2,15 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.tratamiento;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Prescripcion;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
+// --- IMPORT NUEVO ---
+import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.BotonDictado;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent; // Para alineación
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -18,6 +22,7 @@ import java.util.Optional;
 
 /**
  * Card de Prescripciones (persistente en BD).
+ * Con soporte para dictado de voz en las indicaciones.
  */
 public class PrescripcionesCardEditor extends Div {
 
@@ -74,6 +79,16 @@ public class PrescripcionesCardEditor extends Div {
         taIndicaciones.setWidthFull();
         taIndicaciones.setMinHeight("100px");
 
+        // --- CAMBIO INICIO: Botón de dictado ---
+        BotonDictado btnDictar = new BotonDictado(taIndicaciones);
+
+        // Wrapper para alinear el textArea con el botón
+        HorizontalLayout wrapper = new HorizontalLayout(taIndicaciones, btnDictar);
+        wrapper.setWidthFull();
+        wrapper.setAlignItems(FlexComponent.Alignment.END); // Alineado abajo a la derecha
+        wrapper.setSpacing(true);
+        // --- CAMBIO FIN ---
+
         TextField tfFrecuencia = new TextField("Frecuencia (opcional)");
         tfFrecuencia.setWidthFull();
 
@@ -95,16 +110,20 @@ public class PrescripcionesCardEditor extends Div {
 
             try {
                 service.agregarPrescripcion(historiaId, sb.toString());
-                lista.remove(taIndicaciones, tfFrecuencia, tfDuracion, acciones[0]);
+                // Removemos el wrapper en lugar de taIndicaciones
+                lista.remove(wrapper, tfFrecuencia, tfDuracion, acciones[0]);
                 pintar();
             } catch (Exception ex) {
                 Notification.show("No se pudo guardar la prescripción.");
             }
         });
 
-        Button cancelar = new Button("Cancelar", e -> lista.remove(taIndicaciones, tfFrecuencia, tfDuracion, acciones[0]));
+        // Al cancelar, también removemos el wrapper
+        Button cancelar = new Button("Cancelar", e -> lista.remove(wrapper, tfFrecuencia, tfDuracion, acciones[0]));
         acciones[0] = new HorizontalLayout(guardar, cancelar);
-        lista.add(taIndicaciones, tfFrecuencia, tfDuracion, acciones[0]);
+
+        // Agregamos el wrapper (con micro) a la lista visual
+        lista.add(wrapper, tfFrecuencia, tfDuracion, acciones[0]);
     }
 
     private void abrirEditorEdicion(Prescripcion pr) {
@@ -112,6 +131,15 @@ public class PrescripcionesCardEditor extends Div {
         ta.setWidthFull();
         ta.setMinHeight("120px");
         ta.setValue(Optional.ofNullable(pr.getIndicaciones()).orElse(""));
+
+        // --- CAMBIO INICIO: Botón de dictado ---
+        BotonDictado btnDictar = new BotonDictado(ta);
+
+        HorizontalLayout wrapper = new HorizontalLayout(ta, btnDictar);
+        wrapper.setWidthFull();
+        wrapper.setAlignItems(FlexComponent.Alignment.END);
+        wrapper.setSpacing(true);
+        // --- CAMBIO FIN ---
 
         final HorizontalLayout[] acciones = new HorizontalLayout[1];
         Button guardar = new Button("Guardar", e -> {
@@ -122,14 +150,15 @@ public class PrescripcionesCardEditor extends Div {
             }
             try {
                 service.actualizarPrescripcion(historiaId, pr.getId(), val);
-                lista.remove(ta, acciones[0]);
+                lista.remove(wrapper, acciones[0]); // Removemos wrapper
                 pintar();
             } catch (Exception ex) {
                 Notification.show("No se pudo actualizar la prescripción.");
             }
         });
-        Button cancelar = new Button("Cancelar", e -> lista.remove(ta, acciones[0]));
+        Button cancelar = new Button("Cancelar", e -> lista.remove(wrapper, acciones[0]));
         acciones[0] = new HorizontalLayout(guardar, cancelar);
-        lista.add(ta, acciones[0]);
+
+        lista.add(wrapper, acciones[0]);
     }
 }

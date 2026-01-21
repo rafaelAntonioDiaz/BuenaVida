@@ -4,6 +4,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Paciente;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Rol;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.PacienteRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.UsuarioRepository;
+import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.ICorreoService;
 import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
@@ -46,20 +47,17 @@ public class RegistroView extends VerticalLayout {
     private final UsuarioRepository usuarioRepositorio;
     private final PacienteRepository pacienteRepositorio;
     private final PasswordEncoder passwordEncoder;
+    private final ICorreoService correoService;
 
-    @Value("${sendgrid.api.key}")
-    private String sendgridApiKey;
-
-    @Value("${sendgrid.from.email:clubwebapp2025@gmail.com}")
-    private String fromEmail;
 
     public RegistroView(UsuarioRepository usuarioRepositorio,
                         PacienteRepository pacienteRepositorio,
-                        PasswordEncoder passwordEncoder) {
+                        PasswordEncoder passwordEncoder,
+                        ICorreoService correoService) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.pacienteRepositorio = pacienteRepositorio;
         this.passwordEncoder = passwordEncoder;
-
+        this.correoService = correoService;
         /* =====================================================
          * CONFIGURACIÓN BÁSICA DE LA VISTA
          * ===================================================== */
@@ -188,33 +186,17 @@ public class RegistroView extends VerticalLayout {
                 return;
             }
 
-            // Generar código aleatorio de 6 dígitos
             codigoGenerado[0] = String.valueOf(new Random().nextInt(900000) + 100000);
 
             try {
-                SendGrid sg = new SendGrid(sendgridApiKey);
-                Email from = new Email(fromEmail);
-                Email to = new Email(email);
-                Content content = new Content("text/plain",
-                        "Tu código de verificación es: " + codigoGenerado[0]);
-                Mail mail = new Mail(from, "Código de verificación - Consultorio Acupuntura", to, content);
+                // AHORA SÍ usamos el servicio que vamos a probar
+                correoService.enviarCodigo(email, codigoGenerado[0]);
 
-                Request request = new Request();
-                request.setMethod(Method.POST);
-                request.setEndpoint("mail/send");
-                request.setBody(mail.build());
-                Response response = sg.api(request);
-
-                if (response.getStatusCode() == 202) {
-                    Notification.show("Código enviado a " + email,
-                            3000, Notification.Position.MIDDLE);
-                } else {
-                    Notification.show("Error al enviar el correo. Código: " + response.getStatusCode(),
-                            5000, Notification.Position.MIDDLE);
-                }
+                Notification.show("Código enviado a " + email, 3000, Notification.Position.MIDDLE);
             } catch (Exception ex) {
-                logger.error("Error al enviar correo: {}", ex.getMessage());
-                Notification.show("Error al enviar correo: " + ex.getMessage(),
+                // El servicio ya maneja los logs, aquí solo notificamos al usuario
+                logger.error("Error en vista enviando código: {}", ex.getMessage());
+                Notification.show("No se pudo enviar el correo. Intenta de nuevo.",
                         5000, Notification.Position.MIDDLE);
             }
         });

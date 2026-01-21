@@ -5,6 +5,9 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.AntecedenteRelevante;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.HistoriaClinica;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.FileStorageService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
+// --- IMPORT NUEVO ---
+import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.BotonDictado;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -26,8 +29,7 @@ import java.util.*;
 
 /**
  * Card de "Antecedentes relevantes".
- * Extraído fielmente desde PacienteView (crearSeccionAntecedentes),
- * con subida y eliminación de adjuntos (más nuevo arriba).
+ * Con soporte para adjuntos y dictado por voz.
  */
 @CssImport("./styles/antecedentes-card.css")
 public class AntecedentesCard extends Div {
@@ -117,6 +119,16 @@ public class AntecedentesCard extends Div {
         area.setMaxLength(5000);
         area.setMaxHeight("12rem");
 
+        // --- CAMBIO INICIO: Botón de dictado ---
+        BotonDictado btnDictar = new BotonDictado(area);
+
+        // Contenedor para alinear Texto y Micrófono
+        HorizontalLayout editorWrapper = new HorizontalLayout(area, btnDictar);
+        editorWrapper.setWidthFull();
+        editorWrapper.setAlignItems(FlexComponent.Alignment.END); // Alineado abajo a la derecha
+        editorWrapper.setSpacing(true);
+        // --- CAMBIO FIN ---
+
         Button guardar = new Button("Guardar", e -> {
             antRef.setDescripcion(Optional.ofNullable(area.getValue()).orElse("").trim());
             historiaClinicaService.guardar(hc);
@@ -136,7 +148,8 @@ public class AntecedentesCard extends Div {
         footer.getStyle().set("gap", "var(--lumo-space-s)");
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
 
-        dlg.add(area);
+        // Agregamos el wrapper (que contiene el area y el microfono) al dialogo
+        dlg.add(editorWrapper);
         dlg.getFooter().add(footer);
         dlg.open();
     }
@@ -178,21 +191,19 @@ public class AntecedentesCard extends Div {
     private HorizontalLayout crearFilaAdjunto(String ruta, String descripcion, Runnable onEliminar) {
         Anchor enlace = new Anchor(ruta, descripcion);
         enlace.setTarget("_blank");
-        enlace.addClassName("adjunto-link"); // clase semántica
+        enlace.addClassName("adjunto-link");
         Button eliminar = new Button("Eliminar", e -> onEliminar.run());
         eliminar.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_SMALL);
 
         HorizontalLayout fila = new HorizontalLayout(enlace, eliminar);
         fila.setWidthFull();
-        fila.addClassName("fila-adjunto");  // << esta línea clave
+        fila.addClassName("fila-adjunto");
         fila.setSpacing(false);
         fila.getStyle().set("gap", "var(--lumo-space-s)").set("min-width", "0");
         fila.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         return fila;
     }
 
-
-    // Upload genérico con confirmación de descripción
     private Upload crearUpload(TriConsumer<String, String, String> onConfirm, Runnable onCancelUpload) {
         Upload upload = new Upload();
         upload.setWidthFull();
@@ -229,7 +240,6 @@ public class AntecedentesCard extends Div {
         return upload;
     }
 
-    // Diálogo para solicitar descripción del archivo
     private void solicitarDescripcionArchivo(String nombreArchivo, java.util.function.Consumer<String> onOk, Runnable onCancel) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Descripción del archivo");
@@ -259,7 +269,6 @@ public class AntecedentesCard extends Div {
         dialog.open();
     }
 
-    // Confirmación genérica
     private void confirmarEliminar(String texto, Runnable onConfirm) {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader("Confirmar");

@@ -4,6 +4,8 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.HistoriaClinica;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.SeguimientoSalud;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.FileStorageService;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
+import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.BotonDictado;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -69,6 +71,17 @@ public class EstadosSaludCard extends Div {
         );
         areaNuevo.setMaxHeight("12rem");
 
+    // --- CAMBIO INICIO: Agregamos el botón de dictado ---
+        BotonDictado btnDictarNuevo = new BotonDictado(areaNuevo);
+
+    // Creamos un contenedor horizontal para pegar el botón al área de texto
+        HorizontalLayout inputWrapper = new HorizontalLayout(areaNuevo, btnDictarNuevo);
+        inputWrapper.setWidthFull();
+        inputWrapper.setAlignItems(FlexComponent.Alignment.END); // Alinea el micro abajo a la derecha
+        inputWrapper.setSpacing(true);
+        inputWrapper.getStyle().set("gap", "var(--lumo-space-s)");
+    // --- CAMBIO FIN ---
+
         Button crearBtn = new Button("Guardar estado", e -> {
             String desc = Optional.ofNullable(areaNuevo.getValue()).orElse("").trim();
             if (desc.isBlank()) {
@@ -86,7 +99,7 @@ public class EstadosSaludCard extends Div {
         });
         crearBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
 
-        VerticalLayout composer = new VerticalLayout(areaNuevo, crearBtn);
+        VerticalLayout composer = new VerticalLayout(inputWrapper, crearBtn);
         composer.setPadding(false);
         composer.setSpacing(false);
         composer.setWidthFull();
@@ -197,6 +210,14 @@ public class EstadosSaludCard extends Div {
         area.setMaxLength(10000);
         area.setMaxHeight("12rem");
 
+    // --- CAMBIO: Agregar botón al diálogo ---
+        BotonDictado btnDictarEdit = new BotonDictado(area);
+
+        HorizontalLayout editorWrapper = new HorizontalLayout(area, btnDictarEdit);
+        editorWrapper.setWidthFull();
+        editorWrapper.setAlignItems(FlexComponent.Alignment.END);
+    // ---------------------------------------
+
         Button guardar = new Button("Guardar", e -> {
             seg.setDescripcion(Optional.ofNullable(area.getValue()).orElse("").trim());
             historiaClinicaService.guardar(hc);
@@ -215,7 +236,7 @@ public class EstadosSaludCard extends Div {
         footer.getStyle().set("gap", "var(--lumo-space-s)");
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
 
-        dlg.add(area);
+        dlg.add(editorWrapper);
         dlg.getFooter().add(footer);
         dlg.open();
     }

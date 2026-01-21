@@ -2,11 +2,15 @@ package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.tratamiento;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.HistoriaClinica;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.HistoriaClinicaService;
+// --- IMPORT NUEVO ---
+import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.BotonDictado;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent; // Para alineación
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 
@@ -41,9 +45,21 @@ public class DiagnosticosCard extends Div {
     }
 
     private void abrirEditor(String valorActual) {
+        removeAll();
+        add(new H3("Diagnóstico tradicional"));
+
         TextArea ta = new TextArea("Editar diagnóstico");
         ta.setWidthFull();
         ta.setValue(Optional.ofNullable(valorActual).orElse(""));
+
+        ta.setMinHeight("150px");
+
+        BotonDictado btnDictar = new BotonDictado(ta);
+
+        HorizontalLayout editorWrapper = new HorizontalLayout(ta, btnDictar);
+        editorWrapper.setWidthFull();
+        editorWrapper.setAlignItems(FlexComponent.Alignment.END);
+        editorWrapper.setSpacing(true);
 
         Button guardar = new Button("Guardar", e -> {
             String nuevo = ta.getValue().trim();
@@ -58,6 +74,7 @@ public class DiagnosticosCard extends Div {
 
         Button cancelar = new Button("Cancelar", e -> pintar());
 
-        add(ta, new HorizontalLayout(guardar, cancelar));
+        // Agregamos el wrapper en lugar del textArea suelto
+        add(editorWrapper, new HorizontalLayout(guardar, cancelar));
     }
 }

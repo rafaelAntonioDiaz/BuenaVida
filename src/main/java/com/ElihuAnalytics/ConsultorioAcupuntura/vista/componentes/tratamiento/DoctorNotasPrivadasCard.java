@@ -1,14 +1,17 @@
-// java
 package com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.tratamiento;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.HistoriaClinica;
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.NotaPrivada;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.NotaPrivadaService;
+// --- IMPORT NUEVO ---
+import com.ElihuAnalytics.ConsultorioAcupuntura.vista.componentes.BotonDictado;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent; // Para alineación
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -20,9 +23,7 @@ import java.util.Optional;
 
 /**
  * Notas privadas del médico (persistentes):
- * - Crear notas (más reciente arriba).
- * - Editar la nota más reciente (desde la lista y con botón rápido).
- * - Conectada a NotaPrivadaService (MySQL).
+ * Con soporte para dictado de voz.
  */
 public class DoctorNotasPrivadasCard extends Div {
 
@@ -99,6 +100,16 @@ public class DoctorNotasPrivadasCard extends Div {
         ta.setMinHeight("120px");
         ta.setPlaceholder("Escribe aquí tus notas clínicas, observaciones y reacciones del tratamiento...");
 
+        // --- CAMBIO INICIO: Botón de dictado ---
+        BotonDictado btnDictar = new BotonDictado(ta);
+
+        // Wrapper para alinear el textArea con el botón
+        HorizontalLayout wrapper = new HorizontalLayout(ta, btnDictar);
+        wrapper.setWidthFull();
+        wrapper.setAlignItems(FlexComponent.Alignment.END); // Alineado abajo a la derecha
+        wrapper.setSpacing(true);
+        // --- CAMBIO FIN ---
+
         final HorizontalLayout[] acciones = new HorizontalLayout[1];
         Button guardar = new Button("Guardar", e -> {
             String txt = Optional.ofNullable(ta.getValue()).orElse("").trim();
@@ -107,14 +118,18 @@ public class DoctorNotasPrivadasCard extends Div {
                 return;
             }
             service.crear(hc, txt);
-            lista.remove(ta, acciones[0]);
+            // IMPORTANTE: Removemos el wrapper, no el ta suelto
+            lista.remove(wrapper, acciones[0]);
             pintar();
         });
-        Button cancelar = new Button("Cancelar", e -> lista.remove(ta, acciones[0]));
+        Button cancelar = new Button("Cancelar", e -> lista.remove(wrapper, acciones[0]));
 
         acciones[0] = new HorizontalLayout(guardar, cancelar);
         acciones[0].getStyle().set("margin-top", "6px");
-        lista.add(ta, acciones[0]);
+
+        // Agregamos el wrapper (con micro) en lugar del textArea solo
+        lista.addComponentAsFirst(acciones[0]);
+        lista.addComponentAsFirst(wrapper);
     }
 
     // Editor inline: editar la más reciente usando el botón rápido
@@ -135,6 +150,15 @@ public class DoctorNotasPrivadasCard extends Div {
         ta.setMinHeight("120px");
         ta.setValue(Optional.ofNullable(nota.getTexto()).orElse(""));
 
+        // --- CAMBIO INICIO: Botón de dictado ---
+        BotonDictado btnDictar = new BotonDictado(ta);
+
+        HorizontalLayout wrapper = new HorizontalLayout(ta, btnDictar);
+        wrapper.setWidthFull();
+        wrapper.setAlignItems(FlexComponent.Alignment.END);
+        wrapper.setSpacing(true);
+        // --- CAMBIO FIN ---
+
         final HorizontalLayout[] acciones = new HorizontalLayout[1];
         Button guardar = new Button("Guardar", e -> {
             String txt = Optional.ofNullable(ta.getValue()).orElse("").trim();
@@ -143,13 +167,16 @@ public class DoctorNotasPrivadasCard extends Div {
                 return;
             }
             service.actualizar(nota.getId(), txt);
-            lista.remove(ta, acciones[0]);
+            lista.remove(wrapper, acciones[0]); // Removemos wrapper
             pintar();
         });
-        Button cancelar = new Button("Cancelar", e -> lista.remove(ta, acciones[0]));
+        Button cancelar = new Button("Cancelar", e -> lista.remove(wrapper, acciones[0]));
 
         acciones[0] = new HorizontalLayout(guardar, cancelar);
         acciones[0].getStyle().set("margin-top", "6px");
-        lista.add(ta, acciones[0]);
+
+        // Agregamos al inicio de la lista para que se vea el editor
+        lista.addComponentAsFirst(acciones[0]);
+        lista.addComponentAsFirst(wrapper);
     }
 }
