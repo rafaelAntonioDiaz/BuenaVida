@@ -1,36 +1,65 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.servicio;
 
-import org.springframework.context.annotation.Profile;
-import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
-@Profile("!test") // Este bean NO se carga cuando el perfil activo es "test"
+@Profile("!test")
 public class CorreoService implements ICorreoService {
 
     private static final Logger logger = LoggerFactory.getLogger(CorreoService.class);
-    private final JavaMailSender mailSender;
 
-    public CorreoService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    @Value("${sendgrid.api.key}")
+    private String sendGridApiKey;
+
+    @Value("${sendgrid.from.email}")
+    private String fromEmail;
 
     @Override
-    public void enviarCodigo(String destino, String codigo) {
+    public void enviarCodigo(String destinatario, String codigo) {
+        Email from = new Email(fromEmail);
+        String subject = "Código de verificación - Buena Vida";
+        Email to = new Email(destinatario);
+        Content content = new Content("text/plain", "Tu código es: " + codigo);
+        Mail mail = new Mail(from, subject, to, content);
+
+        // AQUÍ ESTÁ EL CAMBIO CLAVE: Usamos este método en lugar de 'new SendGrid()' directo
+        SendGrid sg = crearClienteSendGrid();
+
+        Request request = new Request();
         try {
-            SimpleMailMessage mensaje = new SimpleMailMessage();
-            mensaje.setTo(destino);
-            mensaje.setSubject("Código de verificación - Consultorio Acupuntura");
-            mensaje.setText("Tu código de verificación es: " + codigo + "\n\nEste código es válido por 10 minutos.");
-            mailSender.send(mensaje);
-            logger.info("✅ Código enviado a: {}", destino);
-        } catch (MailException e) {
-            logger.error("❌ Error al enviar correo a {}: {}", destino, e.getMessage());
-            throw new RuntimeException("No se pudo enviar el correo de verificación", e);
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                logger.info("✅ Correo enviado a {}. Status: {}", destinatario, response.getStatusCode());
+            } else {
+                logger.error("❌ Fallo SendGrid. Status: {}", response.getStatusCode());
+                throw new RuntimeException("Error SendGrid: " + response.getStatusCode());
+            }
+        } catch (IOException ex) {
+            logger.error("❌ Error conexión SendGrid: {}", ex.getMessage());
+            throw new RuntimeException("Error de conexión correo", ex);
         }
+    }
+
+    // Método protegido para facilitar el Testing (Se puede 'espiar' y burlar)
+    protected SendGrid crearClienteSendGrid() {
+        return new SendGrid(sendGridApiKey);
     }
 }
