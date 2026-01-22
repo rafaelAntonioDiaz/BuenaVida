@@ -14,16 +14,16 @@ public class BotonDictado extends Button {
         addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         setTooltipText("Presiona para dictar");
 
+        // Estilo redondo
         getStyle().set("border-radius", "50%");
         getStyle().set("width", "var(--lumo-size-m)");
         getStyle().set("height", "var(--lumo-size-m)");
         getStyle().set("padding", "0");
 
-        // 2. JavaScript Nativo Ultra-Compatible (iOS/Android/PC)
+        // 2. LÓGICA JAVASCRIPT CORREGIDA (Sin duplicación de texto)
         String jsLogic = """
             const btn = this;
             const txt = $0;
-            
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
             if (!SpeechRecognition) {
@@ -31,83 +31,80 @@ public class BotonDictado extends Button {
                 return;
             }
 
+            // Inicializar una sola vez
             if (!btn._recognition) {
                 btn._recognition = new SpeechRecognition();
-                // CRÍTICO PARA IPHONE COLOMBIA: Definir la región exacta
                 btn._recognition.lang = 'es-CO'; 
-                
-                // CRÍTICO PARA IPHONE: iOS necesita ver los resultados 'en vivo' o se congela
-                btn._recognition.interimResults = true; 
-                btn._recognition.continuous = false; // iOS prefiere false, se apaga solo al hacer silencio
+                btn._recognition.interimResults = true; // Necesario para que iPhone no se cuelgue
+                btn._recognition.continuous = false;    // Se detiene al hacer silencio (comportamiento walkie-talkie)
 
-                // --- EVENTOS ---
+                // --- AL INICIAR: TOMAMOS LA "FOTO" DEL TEXTO ACTUAL ---
                 btn._recognition.onstart = function() {
                     btn.style.backgroundColor = "var(--lumo-error-color)";
                     btn.style.color = "white";
                     
-                    // Feedback visual directo sin ir al servidor
-                    txt._placeholderOriginal = txt.placeholder;
-                    txt.placeholder = "🔴 Escuchando... habla ahora";
+                    // Guardamos lo que había escrito ANTES de empezar a hablar esta frase
+                    btn._textoBase = txt.value || "";
+                    
+                    // Si ya había texto, aseguramos un espacio al final para no pegar las palabras
+                    if (btn._textoBase.length > 0 && !btn._textoBase.endsWith(" ")) {
+                        btn._textoBase += " ";
+                    }
+                    
+                    txt.placeholder = "Escuchando...";
                 };
 
                 btn._recognition.onend = function() {
                     btn.style.backgroundColor = ""; 
                     btn.style.color = "";
-                    txt.placeholder = txt._placeholderOriginal || "";
+                    txt.placeholder = "";
                     btn._isRecording = false;
+                    
+                    // Disparar evento final para guardar en Java
+                    txt.dispatchEvent(new Event('change', { bubbles: true }));
                 };
 
+                // --- AL RECIBIR PALABRAS: REEMPLAZAMOS, NO SUMAMOS ---
                 btn._recognition.onresult = function(event) {
-                    let transcript = "";
+                    let transcriptActual = "";
                     
-                    // iOS a veces manda los resultados mezclados, forzamos la lectura total
+                    // Juntamos todo lo que el iPhone ha entendido en ESTA frase
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        transcript += event.results[i][0].transcript;
+                        transcriptActual += event.results[i][0].transcript;
                     }
 
-                    if (transcript.length > 0) {
-                        // Concatenar con lo que ya estaba escrito
-                        let textoPrevio = btn._textoPrevio || txt.value || "";
-                        if (textoPrevio.length > 0 && !textoPrevio.endsWith(" ")) {
-                            textoPrevio += " ";
-                        }
-                        txt.value = textoPrevio + transcript;
-                        
-                        // Si es el resultado final, guardamos el texto base para la próxima frase
-                        if (event.results[event.results.length - 1].isFinal) {
-                            btn._textoPrevio = txt.value;
-                            // ¡Avisar a Vaadin que el texto cambió de verdad!
-                            txt.dispatchEvent(new Event('input', { bubbles: true }));
-                            txt.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                    }
+                    // LA CURA A LA LOCURA:
+                    // El valor final es: La FOTO guardada al principio + Lo que estás diciendo ahora
+                    // Ya no sumamos sobre lo que acabamos de escribir.
+                    txt.value = btn._textoBase + transcriptActual;
+                    
+                    // Avisamos a Vaadin para que no pierda el hilo
+                    txt.dispatchEvent(new Event('input', { bubbles: true }));
                 };
 
                 btn._recognition.onerror = function(event) {
                     btn.style.backgroundColor = "";
                     btn._isRecording = false;
-                    txt.placeholder = txt._placeholderOriginal || "";
+                    console.error("Error Speech:", event.error);
                 };
             }
 
-            // --- LÓGICA DE CLICK ---
+            // --- BOTÓN ON/OFF (Walkie-Talkie) ---
             if (btn._isRecording) {
                 btn._recognition.stop();
+                btn._isRecording = false;
             } else {
                 try {
-                    // Guardar el estado actual del texto antes de empezar a grabar
-                    btn._textoPrevio = txt.value; 
                     btn._recognition.start();
                     btn._isRecording = true;
                 } catch (e) {
+                    // Si el usuario da clic muy rápido, a veces falla, reseteamos
                     btn._recognition.abort();
                     btn._isRecording = false;
                 }
             }
         """;
 
-        // IMPORTANTE: NO usamos addClickListener de Java para evitar el lag de red.
-        // Lo inyectamos directo al navegador.
         this.getElement().executeJs("this.addEventListener('click', function() { " + jsLogic + " })", campoDestino.getElement());
     }
 }
