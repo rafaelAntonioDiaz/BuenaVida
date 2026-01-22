@@ -5,10 +5,7 @@ import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Rol;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.PacienteRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.repositorio.UsuarioRepository;
 import com.ElihuAnalytics.ConsultorioAcupuntura.servicio.ICorreoService;
-import com.sendgrid.*;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
+// SE ELIMINARON LOS IMPORTS DE SENDGRID QUE ROMPÍAN LA CLASE
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -26,7 +23,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Random;
@@ -189,12 +185,11 @@ public class RegistroView extends VerticalLayout {
             codigoGenerado[0] = String.valueOf(new Random().nextInt(900000) + 100000);
 
             try {
-                // AHORA SÍ usamos el servicio que vamos a probar
+                // Usamos el servicio actualizado (que ahora usa Brevo por dentro)
                 correoService.enviarCodigo(email, codigoGenerado[0]);
 
                 Notification.show("Código enviado a " + email, 3000, Notification.Position.MIDDLE);
             } catch (Exception ex) {
-                // El servicio ya maneja los logs, aquí solo notificamos al usuario
                 logger.error("Error en vista enviando código: {}", ex.getMessage());
                 Notification.show("No se pudo enviar el correo. Intenta de nuevo.",
                         5000, Notification.Position.MIDDLE);
@@ -284,7 +279,6 @@ public class RegistroView extends VerticalLayout {
         // Título principal
         H2 titulo = new H2("Buena Vida Medicina Ancestral");
         titulo.addClassName("login-header__title");
-
 
         // Ensamblar texto
         textoContainer.add(titulo);

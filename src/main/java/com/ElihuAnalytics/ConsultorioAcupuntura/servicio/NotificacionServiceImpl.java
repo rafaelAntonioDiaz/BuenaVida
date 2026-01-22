@@ -1,36 +1,46 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.servicio;
 
 import com.ElihuAnalytics.ConsultorioAcupuntura.modelo.Sesion;
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+// IMPORTS DE BREVO (Sendinblue)
+import sendinblue.ApiClient;
+import sendinblue.Configuration;
+import sendinblue.auth.ApiKeyAuth;
+import sibApi.TransactionalEmailsApi;
+import sibModel.SendSmtpEmail;
+import sibModel.SendSmtpEmailSender;
+import sibModel.SendSmtpEmailTo;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Servicio para enviar notificaciones nativas y correos electrónicos.
+ * MIGRADO A BREVO.
  */
 @Service
 public class NotificacionServiceImpl implements NotificacionService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificacionServiceImpl.class);
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    // IMPORTANTE: Este correo debe ser el verificado en Brevo, o uno del mismo dominio
     private static final String MEDICO_EMAIL = "rafael.antonio.diaz@gmail.com";
+
     private final NotificacionNativaService nativaService;
 
+    // Usamos la misma llave del properties, pero ahora contiene la de Brevo (xkeysib...)
     @Value("${sendgrid.api.key}")
-    private String sendgridApiKey;
+    private String brevoApiKey;
 
-    @Value("${sendgrid.from.email:clubwebapp2025@gmail.com}")
+    // Asegúrate de que este remitente esté verificado en Brevo
+    @Value("${sendgrid.from.email:rafael.antonio.diaz@gmail.com}")
     private String fromEmail;
 
     public NotificacionServiceImpl(NotificacionNativaService nativaService) {
@@ -39,26 +49,20 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     /**
      * Envía una confirmación al paciente (notificación nativa y correo).
-     * @param sesion Sesión confirmada
-     * @param mensaje Mensaje personalizado
      */
     @Override
     public void enviarConfirmacionPaciente(Sesion sesion, String mensaje) {
         logger.info("Enviando confirmación al paciente para sesión ID: {}", sesion.getId());
         try {
-
             nativaService.enviarNotificacionNativa(sesion , mensaje);
             String emailPaciente = sesion.getPaciente().getUsername();
+            // Método privado actualizado a Brevo
             sendEmail(emailPaciente, "Confirmación de cita - Consultorio Acupuntura", mensaje);
         } catch (Exception e) {
             logger.error("Error al enviar confirmación al paciente para sesión ID {}: {}", sesion.getId(), e.getMessage());
         }
     }
 
-    /**
-     * Envía un recordatorio al paciente.
-     * @param sesion Sesión para la que se envía el recordatorio
-     */
     @Override
     public void enviarRecordatorioPaciente(Sesion sesion) {
         logger.info("Enviando recordatorio al paciente para sesión ID: {}", sesion.getId());
@@ -74,10 +78,6 @@ public class NotificacionServiceImpl implements NotificacionService {
         }
     }
 
-    /**
-     * Envía un recordatorio al médico.
-     * @param sesion Sesión para la que se envía el recordatorio
-     */
     @Override
     public void enviarRecordatorioMedico(Sesion sesion) {
         logger.info("Enviando recordatorio al médico para sesión ID: {}", sesion.getId());
@@ -94,10 +94,6 @@ public class NotificacionServiceImpl implements NotificacionService {
         }
     }
 
-    /**
-     * Envía una notificación al médico sobre una nueva cita programada.
-     * @param sesion Sesión programada
-     */
     @Override
     public void enviarNotificacionProgramacionMedico(Sesion sesion) {
         logger.info("Enviando notificación de programación al médico para sesión ID: {}", sesion.getId());
@@ -119,12 +115,11 @@ public class NotificacionServiceImpl implements NotificacionService {
         logger.info("Enviando notificación de cancelacion para sesión ID: {}", sesion.getId());
         try {
             String mensaje = "Se cancela la cita de " +
-            sesion.getPaciente().getNombres() + " " + sesion.getPaciente().getApellidos() +
-            " para el " + sesion.getFecha().format(FORMATTER) +
-            ". En: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
+                    sesion.getPaciente().getNombres() + " " + sesion.getPaciente().getApellidos() +
+                    " para el " + sesion.getFecha().format(FORMATTER) +
+                    ". En: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
 
             nativaService.enviarNotificacionNativa(sesion, mensaje);
-
             sendEmail(MEDICO_EMAIL, "Cita cancelada - Consultorio Acupuntura", mensaje);
         } catch (Exception e) {
             logger.error("Error al enviar notificación al médico para sesión ID {}: {}", sesion.getId(), e.getMessage());
@@ -141,7 +136,6 @@ public class NotificacionServiceImpl implements NotificacionService {
                     ". En: " + (sesion.getLugar() != null ? sesion.getLugar() : "Sin dirección");
 
             nativaService.enviarNotificacionNativa(sesion, mensaje);
-
             sendEmail(MEDICO_EMAIL, "Cita reprogramada - Acupuntura Buena Vida", mensaje);
         } catch (Exception e) {
             logger.error("Error al enviar notificación al médico para sesión ID {}: {}", sesion.getId(), e.getMessage());
@@ -149,33 +143,41 @@ public class NotificacionServiceImpl implements NotificacionService {
     }
 
     /**
-     * Envía un correo usando la API de SendGrid.
+     * Envía un correo usando la API de BREVO (Antes Sendinblue).
      * @param to Dirección de correo del destinatario
      * @param subject Asunto del correo
-     * @param text Contenido del correo
+     * @param text Contenido del correo (Texto plano)
      */
     private void sendEmail(String to, String subject, String text) {
+        // 1. Configurar cliente con la clave de Brevo
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        ApiKeyAuth apiKey = (ApiKeyAuth) defaultClient.getAuthentication("api-key");
+        apiKey.setApiKey(brevoApiKey);
+
+        TransactionalEmailsApi apiInstance = new TransactionalEmailsApi();
+
+        // 2. Configurar Remitente
+        SendSmtpEmailSender sender = new SendSmtpEmailSender();
+        sender.setEmail(fromEmail);
+        sender.setName("Buena Vida Medicina");
+
+        // 3. Configurar Destinatario
+        SendSmtpEmailTo toEmail = new SendSmtpEmailTo();
+        toEmail.setEmail(to);
+        List<SendSmtpEmailTo> toList = Collections.singletonList(toEmail);
+
+        // 4. Construir Correo
+        SendSmtpEmail sendSmtpEmail = new SendSmtpEmail();
+        sendSmtpEmail.setSender(sender);
+        sendSmtpEmail.setTo(toList);
+        sendSmtpEmail.setSubject(subject);
+        sendSmtpEmail.setTextContent(text); // Usamos TextContent porque tu lógica envía texto plano
+
         try {
-            SendGrid sg = new SendGrid(sendgridApiKey);
-            Email from = new Email(fromEmail);
-            Email toEmail = new Email(to);
-            Content content = new Content("text/plain", text);
-            Mail mail = new Mail(from, subject, toEmail, content);
-
-            Request request = new Request();
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-
-            Response response = sg.api(request);
-            if (response.getStatusCode() == 202) {
-                logger.info("✅ Correo enviado a: {}", to);
-            } else {
-                logger.error("❌ Error al enviar correo a {}: Status {}, Body: {}",
-                        to, response.getStatusCode(), response.getBody());
-            }
+            apiInstance.sendTransacEmail(sendSmtpEmail);
+            logger.info("✅ Correo enviado a: {} vía Brevo", to);
         } catch (Exception e) {
-            logger.error("❌ Error al enviar correo a {}: {}", to, e.getMessage(), e);
+            logger.error("❌ Error al enviar correo a {}: {}", to, e.getMessage());
         }
     }
 }

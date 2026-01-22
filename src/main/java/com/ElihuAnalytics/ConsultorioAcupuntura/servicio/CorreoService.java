@@ -1,65 +1,64 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.servicio;
 
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
+import sendinblue.ApiClient;
+import sendinblue.Configuration;
+import sendinblue.auth.ApiKeyAuth;
+import sibApi.TransactionalEmailsApi;
+import sibModel.SendSmtpEmail;
+import sibModel.SendSmtpEmailSender;
+import sibModel.SendSmtpEmailTo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Service
-@Profile("!test")
 public class CorreoService implements ICorreoService {
 
     private static final Logger logger = LoggerFactory.getLogger(CorreoService.class);
 
-    @Value("${sendgrid.api.key}")
-    private String sendGridApiKey;
+    @Value("${sendgrid.api.key}") // Usaremos la misma variable en properties para no cambiar todo, pero pon la clave de Brevo ahí
+    private String brevoApiKey;
 
-    @Value("${sendgrid.from.email}")
+    @Value("${sendgrid.from.email}") // Tu remitente verificado en Brevo
     private String fromEmail;
 
     @Override
     public void enviarCodigo(String destinatario, String codigo) {
-        Email from = new Email(fromEmail);
-        String subject = "Código de verificación - Buena Vida";
-        Email to = new Email(destinatario);
-        Content content = new Content("text/plain", "Tu código es: " + codigo);
-        Mail mail = new Mail(from, subject, to, content);
+        // 1. Configurar cliente Brevo
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        ApiKeyAuth apiKey = (ApiKeyAuth) defaultClient.getAuthentication("api-key");
+        apiKey.setApiKey(brevoApiKey);
 
-        // AQUÍ ESTÁ EL CAMBIO CLAVE: Usamos este método en lugar de 'new SendGrid()' directo
-        SendGrid sg = crearClienteSendGrid();
+        TransactionalEmailsApi apiInstance = new TransactionalEmailsApi();
 
-        Request request = new Request();
+        // 2. Configurar el correo
+        SendSmtpEmailSender sender = new SendSmtpEmailSender();
+        sender.setEmail(fromEmail);
+        sender.setName("Buena Vida Medicina");
+
+        SendSmtpEmailTo to = new SendSmtpEmailTo();
+        to.setEmail(destinatario);
+        List<SendSmtpEmailTo> toList = Collections.singletonList(to);
+
+        SendSmtpEmail sendSmtpEmail = new SendSmtpEmail();
+        sendSmtpEmail.setSender(sender);
+        sendSmtpEmail.setTo(toList);
+        sendSmtpEmail.setSubject("Código de verificación - Buena Vida");
+        sendSmtpEmail.setTextContent("Hola,\n\nTu código de verificación es: " + codigo +
+                "\n\nÚsalo para completar tu registro.");
+
+        // 3. Enviar
         try {
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-
-            Response response = sg.api(request);
-
-            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                logger.info("✅ Correo enviado a {}. Status: {}", destinatario, response.getStatusCode());
-            } else {
-                logger.error("❌ Fallo SendGrid. Status: {}", response.getStatusCode());
-                throw new RuntimeException("Error SendGrid: " + response.getStatusCode());
-            }
-        } catch (IOException ex) {
-            logger.error("❌ Error conexión SendGrid: {}", ex.getMessage());
-            throw new RuntimeException("Error de conexión correo", ex);
+            apiInstance.sendTransacEmail(sendSmtpEmail);
+            logger.info("✅ Correo enviado a {} vía Brevo.", destinatario);
+        } catch (Exception e) {
+            logger.error("❌ Error enviando correo con Brevo: {}", e.getMessage());
+            throw new RuntimeException("No se pudo enviar el correo de verificación");
         }
-    }
-
-    // Método protegido para facilitar el Testing (Se puede 'espiar' y burlar)
-    protected SendGrid crearClienteSendGrid() {
-        return new SendGrid(sendGridApiKey);
     }
 }
