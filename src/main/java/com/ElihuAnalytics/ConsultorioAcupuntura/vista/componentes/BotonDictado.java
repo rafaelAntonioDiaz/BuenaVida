@@ -4,7 +4,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;
 
 public class BotonDictado extends Button {
@@ -20,80 +19,95 @@ public class BotonDictado extends Button {
         getStyle().set("height", "var(--lumo-size-m)");
         getStyle().set("padding", "0");
 
-        // 2. JavaScript Robusto (Iterativo y con Logs Visibles)
-        String jsScript = """
-            const textArea = $0;
-            const boton = $1;
+        // 2. JavaScript Nativo Ultra-Compatible (iOS/Android/PC)
+        String jsLogic = """
+            const btn = this;
+            const txt = $0;
             
-            if (!('webkitSpeechRecognition' in window)) {
-                alert("Navegador no soportado. Usa Chrome.");
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                alert("Tu navegador no soporta dictado.");
                 return;
             }
 
-            if (!window.recognition) {
-                window.recognition = new webkitSpeechRecognition();
-                window.recognition.continuous = false; // Detenerse al dejar de hablar
-                window.recognition.interimResults = false; // Solo resultados finales
-                window.recognition.lang = 'es-ES';
+            if (!btn._recognition) {
+                btn._recognition = new SpeechRecognition();
+                // CRÍTICO PARA IPHONE COLOMBIA: Definir la región exacta
+                btn._recognition.lang = 'es-CO'; 
+                
+                // CRÍTICO PARA IPHONE: iOS necesita ver los resultados 'en vivo' o se congela
+                btn._recognition.interimResults = true; 
+                btn._recognition.continuous = false; // iOS prefiere false, se apaga solo al hacer silencio
 
-                window.recognition.onstart = function() {
-                    boton.style.backgroundColor = "var(--lumo-error-color)";
-                    boton.style.color = "white";
-                };
-
-                window.recognition.onend = function() {
-                    boton.style.backgroundColor = ""; 
-                    boton.style.color = "";
-                };
-
-                window.recognition.onresult = function(event) {
-                    let transcriptFinal = "";
+                // --- EVENTOS ---
+                btn._recognition.onstart = function() {
+                    btn.style.backgroundColor = "var(--lumo-error-color)";
+                    btn.style.color = "white";
                     
-                    // Bucle robusto para capturar todo lo que se dijo
+                    // Feedback visual directo sin ir al servidor
+                    txt._placeholderOriginal = txt.placeholder;
+                    txt.placeholder = "🔴 Escuchando... habla ahora";
+                };
+
+                btn._recognition.onend = function() {
+                    btn.style.backgroundColor = ""; 
+                    btn.style.color = "";
+                    txt.placeholder = txt._placeholderOriginal || "";
+                    btn._isRecording = false;
+                };
+
+                btn._recognition.onresult = function(event) {
+                    let transcript = "";
+                    
+                    // iOS a veces manda los resultados mezclados, forzamos la lectura total
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) {
-                            transcriptFinal += event.results[i][0].transcript;
+                        transcript += event.results[i][0].transcript;
+                    }
+
+                    if (transcript.length > 0) {
+                        // Concatenar con lo que ya estaba escrito
+                        let textoPrevio = btn._textoPrevio || txt.value || "";
+                        if (textoPrevio.length > 0 && !textoPrevio.endsWith(" ")) {
+                            textoPrevio += " ";
+                        }
+                        txt.value = textoPrevio + transcript;
+                        
+                        // Si es el resultado final, guardamos el texto base para la próxima frase
+                        if (event.results[event.results.length - 1].isFinal) {
+                            btn._textoPrevio = txt.value;
+                            // ¡Avisar a Vaadin que el texto cambió de verdad!
+                            txt.dispatchEvent(new Event('input', { bubbles: true }));
+                            txt.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     }
-
-                    if (transcriptFinal.length > 0) {
-                        let textAnterior = textArea.value;
-                        // Añadir espacio si ya había texto
-                        textArea.value = textAnterior + (textAnterior ? " " : "") + transcriptFinal;
-                        
-                        // Forzar a Vaadin a reconocer el cambio
-                        textArea.dispatchEvent(new Event('input', { bubbles: true }));
-                        textArea.dispatchEvent(new Event('change', { bubbles: true }));
-                    } else {
-                        console.warn("Se recibió evento pero sin texto final.");
-                    }
-                };
-                
-                window.recognition.onnomatch = function(event) {
-                    alert("No se reconoció ninguna palabra.");
                 };
 
-                window.recognition.onerror = function(event) {
-                    boton.style.backgroundColor = "";
-                    // Si es 'no-speech', es que el micrófono no capta nada
-                    if (event.error === 'no-speech') {
-                         alert("No se detecta sonido. Revisa tu micrófono en Ubuntu.");
-                    } else {
-                         console.error("Error dictado:", event.error);
-                    }
+                btn._recognition.onerror = function(event) {
+                    btn.style.backgroundColor = "";
+                    btn._isRecording = false;
+                    txt.placeholder = txt._placeholderOriginal || "";
                 };
             }
 
-            try {
-                window.recognition.start();
-            } catch(e) {
-                window.recognition.stop();
+            // --- LÓGICA DE CLICK ---
+            if (btn._isRecording) {
+                btn._recognition.stop();
+            } else {
+                try {
+                    // Guardar el estado actual del texto antes de empezar a grabar
+                    btn._textoPrevio = txt.value; 
+                    btn._recognition.start();
+                    btn._isRecording = true;
+                } catch (e) {
+                    btn._recognition.abort();
+                    btn._isRecording = false;
+                }
             }
         """;
 
-        this.addClickListener(e -> {
-            campoDestino.getElement().executeJs(jsScript, campoDestino.getElement(), this.getElement());
-            Notification.show("Escuchando... habla ahora", 2000, Notification.Position.MIDDLE);
-        });
+        // IMPORTANTE: NO usamos addClickListener de Java para evitar el lag de red.
+        // Lo inyectamos directo al navegador.
+        this.getElement().executeJs("this.addEventListener('click', function() { " + jsLogic + " })", campoDestino.getElement());
     }
 }
