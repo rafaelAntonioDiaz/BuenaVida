@@ -209,7 +209,7 @@ public class AntecedentesCard extends Div {
         upload.setWidthFull();
         upload.setAutoUpload(true);
         upload.setMaxFiles(10);
-        upload.setMaxFileSize(10 * 1024 * 1024); // 10 MB
+        upload.setMaxFileSize(30 * 1024 * 1024); // 30 MB
         upload.setAcceptedFileTypes(".pdf", ".jpg", ".jpeg", ".png");
 
         upload.setUploadHandler(new UploadHandler() {
