@@ -1,5 +1,6 @@
 package com.ElihuAnalytics.ConsultorioAcupuntura.servicio;
 
+import net.coobird.thumbnailator.Thumbnails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -24,13 +27,14 @@ public class FileStorageService {
 
     @Value("${app.upload.dir:/volumes/uploads/}")
     private String uploadDir;
-
+    // Lista de extensiones que SÍ vamos a comprimir
+    private static final List<String> EXTENSIONES_IMAGEN = Arrays.asList(".jpg", ".jpeg", ".png", ".webp");
     public FileStorageService() {
         // Constructor vacío para inyección de dependencias
     }
 
     /**
-     * Guarda un archivo en el sistema de archivos y devuelve su ruta web relativa.
+     * Comprime y guarda un archivo en el sistema de archivos y devuelve su ruta web relativa.
      *
      * @param inputStream Flujo de entrada del archivo a guardar
      * @param originalName Nombre original del archivo (se usa para extraer la extensión)
@@ -39,38 +43,45 @@ public class FileStorageService {
      */
     public String save(InputStream inputStream, String originalName) throws IOException {
         try {
-            // Asegurar que el directorio de subida existe
+            // 1. Asegurar directorios
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
-                log.info("Directorio de subida creado: {}", uploadPath.toAbsolutePath());
             }
 
-            // Generar nombre único para el archivo
+            // 2. Generar nombre único
             String extension = "";
             if (originalName != null && originalName.contains(".")) {
-                extension = originalName.substring(originalName.lastIndexOf("."));
+                extension = originalName.substring(originalName.lastIndexOf(".")).toLowerCase();
             }
             String fileName = UUID.randomUUID().toString() + extension;
             Path filePath = uploadPath.resolve(fileName);
 
-            // Guardar el archivo
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            // 3. LÓGICA DE COMPRESIÓN
+            if (EXTENSIONES_IMAGEN.contains(extension)) {
+                log.info("Comprimiendo imagen: {}", originalName);
 
-            // Devolver ruta web relativa (debe coincidir con WebStaticResourcesConfig)
+                // MÁGIA: Redimensionar a max 1024px y bajar calidad al 80%
+                // Esto convierte una foto de 10MB en unos 150KB sin perder calidad visible
+                Thumbnails.of(inputStream)
+                        .size(1024, 1024) // Máximo ancho/alto (mantiene relación de aspecto)
+                        .outputQuality(0.80) // Calidad 80% (excelente balance)
+                        .toFile(filePath.toFile());
+            } else {
+                // Si es PDF u otro archivo, guardar tal cual
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // 4. Retornar ruta web
             String webPath = "/pacientes-Uploads/" + fileName;
-
-            log.info("Archivo guardado exitosamente: originalName={}, fileName={}, filePath={}, webPath={}",
-                    originalName, fileName, filePath.toAbsolutePath(), webPath);
-
+            log.info("Archivo guardado (Optimizado): {}", webPath);
             return webPath;
+
         } catch (IOException ex) {
-            log.error("Error al guardar archivo: originalName={}, uploadDir={}, mensaje={}",
-                    originalName, uploadDir, ex.getMessage(), ex);
+            log.error("Error guardando archivo: {}", ex.getMessage());
             throw ex;
         }
     }
-
     /**
      * Elimina un archivo del sistema de archivos.
      *

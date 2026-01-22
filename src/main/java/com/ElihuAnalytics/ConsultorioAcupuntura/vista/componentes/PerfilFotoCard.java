@@ -29,7 +29,7 @@ import java.io.InputStream;
 public class PerfilFotoCard extends Div {
 
     private static final Logger log = LoggerFactory.getLogger(PerfilFotoCard.class);
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    private static final long MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
     private final Paciente paciente;
     private final FileStorageService fileStorageService;

@@ -47,7 +47,7 @@ dependencies {
     implementation enforcedPlatform('com.vaadin:vaadin-bom:24.8.4')
     implementation 'com.vaadin:vaadin-spring-boot-starter:24.8.4'
     implementation 'com.sendinblue:sib-api-v3-sdk:7.0.0'
-    // CORRECCIÓN: Bloque exclude cerrado correctamente
+    implementation 'net.coobird:thumbnailator:0.4.20'
     implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
         exclude group: 'org.neo4j'
     }
