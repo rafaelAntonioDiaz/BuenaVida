@@ -20,6 +20,9 @@ hs_err_pid*
 *.ipr
 out/
 
+# Excluir todos los archivos .db dentro de la carpeta data
+data/*.db
+
 # Archivos específicos de STS/Eclipse
 .apt_generated
 .classpath
