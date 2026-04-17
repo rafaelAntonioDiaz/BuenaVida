@@ -32,10 +32,7 @@ import java.util.List;
  * Corregida para no usar LayoutPrincipal y añadir sección de blog.
  */
 
-// --- INICIO DE LA CORRECCIÓN ---
-// Se elimina "layout = LayoutPrincipal.class" para restaurar el diseño original.
 @Route("")
-// --- FIN DE LA CORRECCIÓN ---
 @PageTitle("Acupuntura para Parkinson, Asma y Gota en Bucaramanga | Rafael Díaz")
 @AnonymousAllowed
 @CssImport("./styles/home-view.css") // Importamos los estilos
@@ -54,14 +51,11 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         this.auth = auth;
         this.appUrl = appUrl;
 
-        // --- INICIO DE LA CORRECCIÓN DE DISEÑO ---
-        // Usamos la misma clase de fondo que LoginView
+
         addClassName("login-view");
-        // Eliminamos el fondo por defecto del VerticalLayout
         getStyle()
                 .set("background", "transparent")
                 .set("background-color", "transparent");
-        // --- FIN DE LA CORRECCIÓN DE DISEÑO ---
 
         setSizeFull();
         setAlignItems(Alignment.CENTER);
@@ -196,7 +190,7 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
         this.cardContainer.removeAll();
 
         // Obtenemos los artículos del servicio
-        List<BlogArticulo> articulos = blogArticuloService.findTop3Recientes();
+        List<BlogArticulo> articulos = blogArticuloService.findAllOrdenados();
 
         if (articulos.isEmpty()) {
             // Si no hay artículos, muestra un mensaje

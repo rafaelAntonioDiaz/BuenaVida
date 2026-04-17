@@ -34,10 +34,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     private final LoginForm loginForm = new LoginForm(); // Hecho final
     private final AutenticacionServicio authService; // <-- INYECTAR SERVICIO
 
-    @Autowired // <-- AÑADIR AUTOWIRED AL CONSTRUCTOR
+    @Autowired
     public LoginView(AutenticacionServicio authService) {
-        this.authService = authService; // <-- ASIGNAR SERVICIO
-
+        this.authService = authService;
         addClassName("login-view");
         setSizeFull();
         setPadding(false);
@@ -114,7 +113,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        // --- INICIO DE LA CORRECCIÓN ---
         // 1. Verificar si el usuario ya está autenticado
         if (authService.getUsuarioAutenticado().isPresent()) {
             // 2. Si está autenticado, redirigir según su rol
@@ -135,6 +133,5 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 loginForm.setError(true);
             }
         }
-        // --- FIN DE LA CORRECCIÓN ---
     }
 }
