@@ -19,9 +19,7 @@ import com.vaadin.flow.theme.Theme;
         description = "Consultorio en el ciberespacio",
         backgroundColor = "#ffffff", // Mantener
         themeColor = "#4CAF50",      // Mantener
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Usa tu logo SVG principal. Vaadin lo usará como base.
-        iconPath = "images/fondoNaturaleza-soft.png",
+        iconPath = "icons/icon.png",
         manifestPath = "manifest.webmanifest", // Mantener
         offlinePath = "offline.html"          // Mantener si tienes offline.html
         // offlineResources ELIMINADO para simplificar la precarga
@@ -32,7 +30,7 @@ import com.vaadin.flow.theme.Theme;
 
 // --- INICIO DE CONFIGURACIÓN SEO GLOBAL ---
 // Establece el TÍTULO global por defecto
-@PageTitle("Acupuntura a Domicilio en Bucaramanga | Rafael Díaz Sarmiento")
+@PageTitle("Acupuntura a Domicilio en Bucaramanga | Rafael Antonio Díaz Sarmiento")
 // Establece la DESCRIPCIÓN global por defecto
 @Meta(name = "description", content = "Servicio profesional de acupuntura y medicina ancestral a domicilio en Bucaramanga, Floridablanca y Girón. Tratamientos efectivos para diversas dolencias.")
 @Meta(name = "keywords", content = "acupuntura, medicina ancestral, Rafael Antonio Díaz Sarmiento, Bucaramanga, Floridablanca, Girón, Parkinson, asma, gota, esclerosis múltiple")
