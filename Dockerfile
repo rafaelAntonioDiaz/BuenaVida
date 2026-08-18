@@ -24,3 +24,6 @@ EXPOSE 8080
 
 # Comando de arranque
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+#Perfil_Activo
+ENV SPRING_PROFILES_ACTIVE=prod

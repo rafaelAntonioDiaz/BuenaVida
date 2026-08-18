@@ -16,6 +16,8 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +32,7 @@ import java.util.function.Consumer;
 public class AdjuntosHelper {
 
     private final FileStorageService fileStorageService;
-
+    private static final Logger log = LoggerFactory.getLogger(AdjuntosHelper.class);
     public AdjuntosHelper(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
@@ -68,7 +70,10 @@ public class AdjuntosHelper {
                         onCancelUpload.run();
                     })));
                 } catch (IOException ex) {
-                    context.getUI().ifPresent(ui -> ui.access(() -> Notification.show("Error al guardar: " + originalName)));
+                    log.error("Error al guardar desde UI: {}", originalName, ex);
+                    context.getUI().ifPresent(ui -> ui.access(() ->
+                            Notification.show("Error al guardar: " + originalName + " - " + ex.getMessage())
+                    ));
                     throw ex;
                 }
             }

@@ -42,43 +42,36 @@ public class FileStorageService {
      * @throws IOException si ocurre un error al crear directorios o guardar el archivo
      */
     public String save(InputStream inputStream, String originalName) throws IOException {
+        String extension = "";
         try {
-            // 1. Asegurar directorios
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // 2. Generar nombre único
-            String extension = "";
             if (originalName != null && originalName.contains(".")) {
                 extension = originalName.substring(originalName.lastIndexOf(".")).toLowerCase();
             }
             String fileName = UUID.randomUUID().toString() + extension;
             Path filePath = uploadPath.resolve(fileName);
 
-            // 3. LÓGICA DE COMPRESIÓN
             if (EXTENSIONES_IMAGEN.contains(extension)) {
                 log.info("Comprimiendo imagen: {}", originalName);
-
-                // MÁGIA: Redimensionar a max 1024px y bajar calidad al 80%
-                // Esto convierte una foto de 10MB en unos 150KB sin perder calidad visible
                 Thumbnails.of(inputStream)
-                        .size(1024, 1024) // Máximo ancho/alto (mantiene relación de aspecto)
-                        .outputQuality(0.80) // Calidad 80% (excelente balance)
+                        .size(1024, 1024)
+                        .outputQuality(0.80)
                         .toFile(filePath.toFile());
             } else {
-                // Si es PDF u otro archivo, guardar tal cual
                 Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // 4. Retornar ruta web
             String webPath = "/pacientes-Uploads/" + fileName;
             log.info("Archivo guardado (Optimizado): {}", webPath);
             return webPath;
 
         } catch (IOException ex) {
-            log.error("Error guardando archivo: {}", ex.getMessage());
+            log.error("Error guardando archivo originalName={} extension={} uploadDir={}",
+                    originalName, extension, uploadDir, ex);
             throw ex;
         }
     }
